@@ -786,26 +786,56 @@ function App() {
             <div>
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                 <h2 className="text-2xl font-bold text-gray-800">📋 History</h2>
-                {history.length > 0 && (
-                  <button
-                    onClick={() => {
-                      confirmAction(
-                        "Clear All History?",
-                        "This will permanently delete all history records.",
-                        () => {
-                          api("/history", { method: "DELETE" })
-                            .then(() => {
-                              setHistory([]);
-                              showToast("History cleared!");
-                            });
+                <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                  {history.length > 0 && (
+                    <button
+                      onClick={async () => {
+                        try {
+                          const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+                          const res = await fetch(`${baseUrl}/history/download`, {
+                            headers: {
+                              Authorization: `Bearer ${token}`
+                            }
+                          });
+                          if (res.ok) {
+                            const blob = await res.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement("a");
+                            a.href = url;
+                            a.download = "history_export.csv";
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                          }
+                        } catch (err) {
+                          console.error("Download failed:", err);
                         }
-                      );
-                    }}
-                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition w-full md:w-auto"
-                  >
-                    Clear All
-                  </button>
-                )}
+                      }}
+                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition w-full md:w-auto"
+                    >
+                      📥 Download CSV
+                    </button>
+                  )}
+                  {history.length > 0 && (
+                    <button
+                      onClick={() => {
+                        confirmAction(
+                          "Clear All History?",
+                          "This will permanently delete all history records.",
+                          () => {
+                            api("/history", { method: "DELETE" })
+                              .then(() => {
+                                setHistory([]);
+                                showToast("History cleared!");
+                              });
+                          }
+                        );
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm transition w-full md:w-auto"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Filter Bar */}
