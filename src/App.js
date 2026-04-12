@@ -792,7 +792,14 @@ function App() {
                       onClick={async () => {
                         try {
                           const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-                          const res = await fetch(`${baseUrl}/history/download`, {
+                          const params = new URLSearchParams();
+                          if (historyFilterName) params.append("name", historyFilterName);
+                          if (historyFilterDateFrom) params.append("dateFrom", historyFilterDateFrom);
+                          if (historyFilterDateTo) params.append("dateTo", historyFilterDateTo);
+                          if (historyFilterType && historyFilterType !== "all") params.append("type", historyFilterType);
+                          
+                          const query = params.toString();
+                          const res = await fetch(`${baseUrl}/history/download${query ? `?${query}` : ""}`, {
                             headers: {
                               Authorization: `Bearer ${token}`
                             }
