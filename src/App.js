@@ -520,6 +520,38 @@ function App() {
           {/* PRODUCTS */}
           {page === "products" && (
             <div>
+              {/* Download Button */}
+              {products.length > 0 && (
+                <div className="mb-4">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+                        const res = await fetch(`${baseUrl}/products/download`, {
+                          headers: {
+                            Authorization: `Bearer ${token}`
+                          }
+                        });
+                        if (res.ok) {
+                          const blob = await res.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = "products_export.csv";
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                        }
+                      } catch (err) {
+                        console.error("Download failed:", err);
+                      }
+                    }}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm transition"
+                  >
+                    📥 Download Products CSV
+                  </button>
+                </div>
+              )}
+              
               {/* Sort Bar */}
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 mb-6 overflow-x-auto whitespace-nowrap">
                 <div className="inline-flex items-center gap-2">
