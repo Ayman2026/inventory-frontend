@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Home, Package, Plus, History, LogOut, Moon, Sun } from "lucide-react";
+import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { AuthContext } from "./AuthContext";
 import LoginPage from "./LoginPage";
@@ -47,6 +47,10 @@ function App() {
   const [historyFilterDateFrom, setHistoryFilterDateFrom] = useState("");
   const [historyFilterDateTo, setHistoryFilterDateTo] = useState("");
   const [historyFilterType, setHistoryFilterType] = useState("all");
+
+  // Top Movers
+  const [topMovers, setTopMovers] = useState([]);
+  const [topMoversLoading, setTopMoversLoading] = useState(false);
 
   // Mobile Sidebar Toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -96,6 +100,16 @@ function App() {
       .catch(() => setHistoryLoading(false));
   };
 
+  const fetchTopMovers = () => {
+    setTopMoversLoading(true);
+    api("/history/top-movers?limit=10")
+      .then(data => {
+        setTopMovers(data);
+        setTopMoversLoading(false);
+      })
+      .catch(() => setTopMoversLoading(false));
+  };
+
   const fetchProducts = () => {
     setProductsLoading(true);
     api("/products")
@@ -114,6 +128,12 @@ function App() {
     fetchProducts();
     fetchHistory();
   }, []);
+
+  useEffect(() => {
+    if (page === "topmovers") {
+      fetchTopMovers();
+    }
+  }, [page]);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -278,6 +298,7 @@ function App() {
     { id: "dashboard", label: "Dashboard", icon: Home },
     { id: "products", label: "Products", icon: Package },
     { id: "add", label: "Add Product", icon: Plus },
+    { id: "topmovers", label: "Top Movers", icon: TrendingUp },
     { id: "history", label: "History", icon: History }
   ];
 
@@ -462,7 +483,7 @@ function App() {
             <button onClick={() => setMobileMenuOpen(true)} className={`text-2xl md:hidden ${darkMode ? "text-gray-300" : "text-gray-600"}`}>☰</button>
             <div>
               <h1 className={`text-xl font-semibold capitalize ${darkMode ? "text-white" : "text-gray-900"}`}>
-                {page === "add" ? "Add Product" : page === "lowstock" ? "Low Stock" : page === "worth" ? "Total Worth" : page}
+                {page === "add" ? "Add Product" : page === "lowstock" ? "Low Stock" : page === "worth" ? "Total Worth" : page === "topmovers" ? "Top Movers" : page}
               </h1>
               <p className="text-gray-400 text-xs mt-0.5">
                 {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
@@ -515,17 +536,18 @@ function App() {
           {page === "dashboard" && (
             <>
               {loading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
-                  <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
+                  <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
                 </div>
               ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
                   {[
                     { label: "Total Products", value: totalProducts, color: "bg-indigo-50 border-indigo-200 text-indigo-700", darkColor: "bg-indigo-900/40 border-indigo-700 text-indigo-300", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
                     { label: "Total Stock", value: totalStock, color: "bg-emerald-50 border-emerald-200 text-emerald-700", darkColor: "bg-emerald-900/40 border-emerald-700 text-emerald-300", icon: "M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" },
                     { label: "Approaching", value: approachingStock, color: "bg-amber-50 border-amber-200 text-amber-700", darkColor: "bg-amber-900/40 border-amber-700 text-amber-300", icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" },
                     { label: "Low Stock", value: lowStock, color: "bg-red-50 border-red-200 text-red-700 cursor-pointer hover:shadow-md transition", darkColor: "bg-red-900/40 border-red-700 text-red-300 cursor-pointer hover:shadow-md transition", icon: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z", onClick: () => setPage("lowstock") },
-                    { label: "Total Worth", value: `₹${totalValue.toLocaleString()}`, color: "bg-purple-50 border-purple-200 text-purple-700 cursor-pointer hover:shadow-md transition", darkColor: "bg-purple-900/40 border-purple-700 text-purple-300 cursor-pointer hover:shadow-md transition", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", onClick: () => setPage("worth") }
+                    { label: "Total Worth", value: `₹${totalValue.toLocaleString()}`, color: "bg-purple-50 border-purple-200 text-purple-700 cursor-pointer hover:shadow-md transition", darkColor: "bg-purple-900/40 border-purple-700 text-purple-300 cursor-pointer hover:shadow-md transition", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", onClick: () => setPage("worth") },
+                    { label: "Top Movers", value: topMovers.length > 0 ? topMovers[0].name : "—", color: "bg-orange-50 border-orange-200 text-orange-700 cursor-pointer hover:shadow-md transition", darkColor: "bg-orange-900/40 border-orange-700 text-orange-300 cursor-pointer hover:shadow-md transition", icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6", onClick: () => setPage("topmovers") }
                   ].map((card, i) => (
                     <div
                       key={i}
@@ -877,6 +899,120 @@ function App() {
                   )}
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* TOP MOVERS */}
+          {page === "topmovers" && (
+            <div>
+              <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                <div>
+                  <h2 className={`text-2xl font-bold ${darkMode ? "text-orange-400" : "text-orange-600"}`}>🔥 Top Movers</h2>
+                  <p className={`text-sm mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Products with the highest stock movement velocity</p>
+                </div>
+                <button
+                  onClick={fetchTopMovers}
+                  className={`px-4 py-2 rounded-lg text-sm transition w-full md:w-auto ${
+                    darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  }`}
+                >
+                  🔄 Refresh
+                </button>
+              </div>
+
+              {topMoversLoading ? (
+                <div className={`rounded-xl shadow-lg overflow-hidden transition-colors duration-300 ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[600px]">
+                      <thead>
+                        <tr className={`border-b transition-colors ${darkMode ? "bg-gray-700 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Rank</th>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Product</th>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Total Moved</th>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Transactions</th>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Last Activity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <SkeletonTableRow />
+                        <SkeletonTableRow />
+                        <SkeletonTableRow />
+                        <SkeletonTableRow />
+                        <SkeletonTableRow />
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : topMovers.length === 0 ? (
+                <div className={`p-8 rounded-xl text-center text-lg transition-colors ${
+                  darkMode ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-500"
+                }`}>
+                  No stock movements yet. Start adding or removing products to see top movers!
+                </div>
+              ) : (
+                <div className={`rounded-xl shadow-lg overflow-hidden transition-colors duration-300 ${
+                  darkMode ? "bg-gray-800" : "bg-white"
+                }`}>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[600px]">
+                      <thead>
+                        <tr className={`border-b transition-colors ${darkMode ? "bg-gray-700 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Rank</th>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Product</th>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Total Moved</th>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Transactions</th>
+                          <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Last Activity</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {topMovers.map((mover, index) => {
+                          const rank = index + 1;
+                          const rankBadge = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : `#${rank}`;
+                          const lastActivityDate = new Date(mover.lastActivity).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          });
+                          return (
+                            <tr key={mover.name} className={`border-b transition-colors ${darkMode ? "border-gray-700 hover:bg-gray-700/50" : "border-gray-100 hover:bg-gray-50"}`}>
+                              <td className="px-6 py-4">
+                                <span className="text-xl">{rankBadge}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`font-semibold text-lg ${darkMode ? "text-blue-400" : "text-blue-600"}`}>{mover.name}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center gap-2">
+                                  <div className={`h-2 rounded-full ${darkMode ? "bg-orange-900" : "bg-orange-100"}`} style={{ width: `${Math.min((mover.totalMoved / (topMovers[0]?.totalMoved || 1)) * 100, 100)}px` }}></div>
+                                  <span className={`font-bold ${darkMode ? "text-orange-400" : "text-orange-600"}`}>{mover.totalMoved} units</span>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                                  mover.transactions > 10
+                                    ? darkMode ? "bg-red-900/50 text-red-300" : "bg-red-100 text-red-700"
+                                    : mover.transactions > 5
+                                    ? darkMode ? "bg-amber-900/50 text-amber-300" : "bg-amber-100 text-amber-700"
+                                    : darkMode ? "bg-emerald-900/50 text-emerald-300" : "bg-emerald-100 text-emerald-700"
+                                }`}>
+                                  {mover.transactions} {mover.transactions === 1 ? "time" : "times"}
+                                </span>
+                              </td>
+                              <td className={`px-6 py-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                                {lastActivityDate}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
