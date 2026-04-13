@@ -550,7 +550,8 @@ function App() {
                   {[
                     { value: "7", label: "7D" },
                     { value: "30", label: "30D" },
-                    { value: "90", label: "90D" }
+                    { value: "90", label: "90D" },
+                    { value: "all", label: "All" }
                   ].map(period => (
                     <button
                       key={period.value}
@@ -645,60 +646,9 @@ function App() {
                   </div>
 
                   {/* Charts Grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    {/* Stock Trend (Line Chart) */}
-                    <div className={`rounded-xl border p-6 transition-colors ${
-                      darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-                    }`}>
-                      <div className="flex items-center justify-between mb-4">
-                        <div>
-                          <h3 className={`text-sm font-semibold uppercase tracking-wider ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                            Stock Trend
-                          </h3>
-                          <p className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
-                            Stock movements over time
-                          </p>
-                        </div>
-                        <TrendingUp size={20} className={darkMode ? "text-gray-600" : "text-gray-400"} />
-                      </div>
-                      {history.length === 0 ? (
-                        <div className={`h-64 flex items-center justify-center ${darkMode ? "text-gray-600" : "text-gray-400"}`}>
-                          <p className="text-sm">No stock movements yet</p>
-                        </div>
-                      ) : (
-                        <ResponsiveContainer width="100%" height={280}>
-                          <AreaChart data={chartData.slice(0, 10)}>
-                            <defs>
-                              <linearGradient id="colorQuantity" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
-                            <XAxis dataKey="name" stroke={darkMode ? "#9ca3af" : "#6b7280"} fontSize={12} />
-                            <YAxis stroke={darkMode ? "#9ca3af" : "#6b7280"} fontSize={12} />
-                            <Tooltip 
-                              contentStyle={{ 
-                                backgroundColor: darkMode ? "#1f2937" : "#fff",
-                                border: `1px solid ${darkMode ? "#374151" : "#e5e7eb"}`,
-                                borderRadius: "8px"
-                              }}
-                            />
-                            <Area 
-                              type="monotone" 
-                              dataKey="quantity" 
-                              stroke="#3b82f6" 
-                              strokeWidth={2}
-                              fillOpacity={1} 
-                              fill="url(#colorQuantity)" 
-                            />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      )}
-                    </div>
-
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                     {/* Stock Overview (Bar Chart) */}
-                    <div className={`rounded-xl border p-6 transition-colors ${
+                    <div className={`rounded-xl border p-6 transition-colors lg:col-span-2 ${
                       darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
                     }`}>
                       <div className="flex items-center justify-between mb-4">
@@ -789,7 +739,7 @@ function App() {
                     </div>
 
                     {/* Recent Activity Feed */}
-                    <div className={`rounded-xl border p-6 lg:col-span-2 transition-colors ${
+                    <div className={`rounded-xl border p-6 transition-colors ${
                       darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
                     }`}>
                       <div className="flex items-center justify-between mb-4">
@@ -867,44 +817,6 @@ function App() {
                           })}
                         </div>
                       )}
-                    </div>
-                  </div>
-
-                  {/* Quick Actions */}
-                  <div className={`rounded-xl border p-6 transition-colors ${
-                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-                  }`}>
-                    <div className="flex items-center gap-2 mb-4">
-                      <Zap size={18} className={darkMode ? "text-amber-400" : "text-amber-600"} />
-                      <h3 className={`text-sm font-semibold uppercase tracking-wider ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                        Quick Actions
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {[
-                        { label: "Add Product", icon: Plus, page: "add", color: "indigo" },
-                        { label: "View Products", icon: Package, page: "products", color: "emerald" },
-                        { label: "View History", icon: Clock, page: "history", color: "purple" },
-                        { label: "AI Suggestions", icon: Lightbulb, page: "suggestions", color: "amber" }
-                      ].map((action, idx) => {
-                        const Icon = action.icon;
-                        const colors = {
-                          indigo: darkMode ? "bg-indigo-900/30 hover:bg-indigo-900/50 border-indigo-700 text-indigo-400" : "bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-600",
-                          emerald: darkMode ? "bg-emerald-900/30 hover:bg-emerald-900/50 border-emerald-700 text-emerald-400" : "bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-600",
-                          purple: darkMode ? "bg-purple-900/30 hover:bg-purple-900/50 border-purple-700 text-purple-400" : "bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-600",
-                          amber: darkMode ? "bg-amber-900/30 hover:bg-amber-900/50 border-amber-700 text-amber-400" : "bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-600"
-                        };
-                        return (
-                          <button
-                            key={idx}
-                            onClick={() => setPage(action.page)}
-                            className={`p-4 rounded-lg border transition-all hover:shadow-md flex flex-col items-center gap-2 ${colors[action.color]}`}
-                          >
-                            <Icon size={24} strokeWidth={2} />
-                            <span className="text-sm font-semibold">{action.label}</span>
-                          </button>
-                        );
-                      })}
                     </div>
                   </div>
                 </>
