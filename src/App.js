@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp } from "lucide-react";
+import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp, Lightbulb } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { AuthContext } from "./AuthContext";
 import LoginPage from "./LoginPage";
+import AISuggestionsPage from "./AISuggestionsPage";
 
 function App() {
   const { user, token, loading: authLoading, logout } = useContext(AuthContext);
@@ -299,6 +300,7 @@ function App() {
     { id: "products", label: "Products", icon: Package },
     { id: "add", label: "Add Product", icon: Plus },
     { id: "topmovers", label: "Top Movers", icon: TrendingUp },
+    { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
     { id: "history", label: "History", icon: History }
   ];
 
@@ -483,7 +485,7 @@ function App() {
             <button onClick={() => setMobileMenuOpen(true)} className={`text-2xl md:hidden ${darkMode ? "text-gray-300" : "text-gray-600"}`}>☰</button>
             <div>
               <h1 className={`text-xl font-semibold capitalize ${darkMode ? "text-white" : "text-gray-900"}`}>
-                {page === "add" ? "Add Product" : page === "lowstock" ? "Low Stock" : page === "worth" ? "Total Worth" : page === "topmovers" ? "Top Movers" : page}
+                {page === "add" ? "Add Product" : page === "lowstock" ? "Low Stock" : page === "worth" ? "Total Worth" : page === "topmovers" ? "Top Movers" : page === "suggestions" ? "AI Suggestions" : page}
               </h1>
               <p className="text-gray-400 text-xs mt-0.5">
                 {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
@@ -1014,6 +1016,11 @@ function App() {
                 </div>
               )}
             </div>
+          )}
+
+          {/* AI SUGGESTIONS */}
+          {page === "suggestions" && (
+            <AISuggestionsPage darkMode={darkMode} />
           )}
 
           {/* HISTORY */}
