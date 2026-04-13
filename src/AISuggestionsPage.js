@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./AuthContext";
-import { Lightbulb, AlertTriangle, TrendingUp, TrendingDown, Package, DollarSign, Calendar, Gift, Trash2, Check, X, Filter, RefreshCw } from "lucide-react";
+import { 
+  Lightbulb, AlertTriangle, TrendingUp, TrendingDown, Package, 
+  DollarSign, Calendar, Gift, Trash2, Check, X, Filter, RefreshCw,
+  AlertCircle, BarChart3, ShoppingCart
+} from "lucide-react";
 
 function AISuggestionsPage({ darkMode }) {
   const { token } = useContext(AuthContext);
@@ -67,36 +71,36 @@ function AISuggestionsPage({ darkMode }) {
 
   const getTypeIcon = (type) => {
     const icons = {
-      reorder: AlertTriangle,
+      reorder: AlertCircle,
       dead_stock: Package,
       fast_mover: TrendingUp,
       pricing: DollarSign,
       seasonal: Calendar,
       bundle: Gift,
       clearance: Trash2,
-      trend: TrendingUp
+      trend: BarChart3
     };
     const Icon = icons[type] || Lightbulb;
-    return <Icon size={20} />;
+    return <Icon size={20} strokeWidth={2} />;
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case "high": return darkMode ? "border-red-700 bg-red-900/30" : "border-red-200 bg-red-50";
-      case "medium": return darkMode ? "border-amber-700 bg-amber-900/30" : "border-amber-200 bg-amber-50";
-      case "low": return darkMode ? "border-blue-700 bg-blue-900/30" : "border-blue-200 bg-blue-50";
-      default: return darkMode ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50";
+      case "high": return darkMode ? "border-l-red-500" : "border-l-red-500";
+      case "medium": return darkMode ? "border-l-amber-500" : "border-l-amber-500";
+      case "low": return darkMode ? "border-l-blue-500" : "border-l-blue-500";
+      default: return darkMode ? "border-l-gray-500" : "border-l-gray-500";
     }
   };
 
   const getPriorityBadge = (priority) => {
     const colors = {
-      high: "bg-red-600 text-white",
-      medium: "bg-amber-500 text-white",
-      low: "bg-blue-500 text-white"
+      high: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
+      medium: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+      low: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400"
     };
     return (
-      <span className={`px-2 py-1 rounded text-xs font-semibold uppercase ${colors[priority]}`}>
+      <span className={`px-2.5 py-1 rounded text-xs font-semibold uppercase tracking-wide ${colors[priority]}`}>
         {priority}
       </span>
     );
@@ -128,13 +132,6 @@ function AISuggestionsPage({ darkMode }) {
     { value: "trend", label: "Product Focus" }
   ];
 
-  // Quick filter buttons
-  const quickFilters = [
-    { value: "all", label: "All", icon: Filter },
-    { value: "trend", label: "Focus", icon: Lightbulb },
-    { value: "reorder", label: "Urgent", icon: AlertTriangle }
-  ];
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -145,7 +142,7 @@ function AISuggestionsPage({ darkMode }) {
             AI Business Suggestions
           </h2>
           <p className={`mt-1 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-            Smart insights based on your inventory patterns and trends
+            Intelligent insights based on your inventory patterns and trends
           </p>
         </div>
 
@@ -153,42 +150,16 @@ function AISuggestionsPage({ darkMode }) {
           onClick={handleRefresh}
           disabled={refreshing}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition ${
-            darkMode
-              ? "bg-indigo-600 hover:bg-indigo-700 text-white"
-              : "bg-indigo-600 hover:bg-indigo-700 text-white"
-          } ${refreshing ? "opacity-50 cursor-not-allowed" : ""}`}
+            refreshing ? "opacity-50 cursor-not-allowed" : ""
+          } bg-indigo-600 hover:bg-indigo-700 text-white`}
         >
           <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Analyzing..." : "Refresh Analysis"}
         </button>
       </div>
 
-      {/* Quick Filters */}
-      <div className="flex gap-3">
-        {quickFilters.map(filter => {
-          const Icon = filter.icon;
-          const isActive = filterType === filter.value;
-          return (
-            <button
-              key={filter.value}
-              onClick={() => setFilterType(filter.value)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition ${
-                isActive
-                  ? "bg-indigo-600 text-white shadow-lg"
-                  : darkMode
-                  ? "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
-                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
-              }`}
-            >
-              <Icon size={16} />
-              {filter.label}
-            </button>
-          );
-        })}
-      </div>
-
       {/* Filters */}
-      <div className={`rounded-xl border p-4 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+      <div className={`rounded-lg border p-4 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
         <div className="flex items-center gap-3 mb-3">
           <Filter size={18} className={darkMode ? "text-gray-400" : "text-gray-600"} />
           <span className={`font-semibold text-sm ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Filters</span>
@@ -240,14 +211,14 @@ function AISuggestionsPage({ darkMode }) {
           {[1, 2, 3].map(i => (
             <div
               key={i}
-              className={`animate-pulse rounded-xl border p-6 h-48 ${
+              className={`animate-pulse rounded-lg border-l-4 p-6 h-48 ${
                 darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
               }`}
             ></div>
           ))}
         </div>
       ) : suggestions.length === 0 ? (
-        <div className={`rounded-xl border p-12 text-center ${
+        <div className={`rounded-lg border p-12 text-center ${
           darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
         }`}>
           <Lightbulb size={48} className={`mx-auto mb-4 ${darkMode ? "text-gray-600" : "text-gray-400"}`} />
@@ -263,16 +234,16 @@ function AISuggestionsPage({ darkMode }) {
           {suggestions.map(suggestion => (
             <div
               key={suggestion._id}
-              className={`rounded-xl border-2 transition-all ${getPriorityColor(suggestion.priority)} ${
-                suggestion.actedUpon ? "opacity-60" : ""
-              }`}
+              className={`rounded-lg border-l-4 ${getPriorityColor(suggestion.priority)} ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              } ${suggestion.actedUpon ? "opacity-60" : ""} shadow-sm hover:shadow-md transition-shadow`}
             >
               <div className="p-6">
                 {/* Header */}
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div className="flex items-start gap-3 flex-1">
                     <div className={`p-2 rounded-lg ${
-                      darkMode ? "bg-gray-700" : "bg-white"
+                      darkMode ? "bg-gray-700" : "bg-gray-100"
                     }`}>
                       {getTypeIcon(suggestion.type)}
                     </div>
@@ -289,7 +260,7 @@ function AISuggestionsPage({ darkMode }) {
                         </span>
                         {suggestion.productName && (
                           <span className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                            • {suggestion.productName}
+                            {suggestion.productName}
                           </span>
                         )}
                       </div>
@@ -306,10 +277,10 @@ function AISuggestionsPage({ darkMode }) {
                 {suggestion.type === 'trend' && suggestion.data?.opportunityScore !== undefined && (
                   <div className={`mb-4 p-4 rounded-lg border-2 ${
                     suggestion.data.opportunityScore >= 60
-                      ? darkMode ? "bg-emerald-900/30 border-emerald-700" : "bg-emerald-50 border-emerald-300"
+                      ? darkMode ? "bg-emerald-900/20 border-emerald-700" : "bg-emerald-50 border-emerald-300"
                       : suggestion.data.opportunityScore >= 30
-                      ? darkMode ? "bg-amber-900/30 border-amber-700" : "bg-amber-50 border-amber-300"
-                      : darkMode ? "bg-red-900/30 border-red-700" : "bg-red-50 border-red-300"
+                      ? darkMode ? "bg-amber-900/20 border-amber-700" : "bg-amber-50 border-amber-300"
+                      : darkMode ? "bg-red-900/20 border-red-700" : "bg-red-50 border-red-300"
                   }`}>
                     <div className="flex items-center justify-between mb-2">
                       <span className={`text-xs font-semibold uppercase ${
@@ -327,9 +298,9 @@ function AISuggestionsPage({ darkMode }) {
                         {suggestion.data.opportunityScore}/100
                       </span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div className={`w-full rounded-full h-2 ${darkMode ? "bg-gray-700" : "bg-gray-200"}`}>
                       <div
-                        className={`h-2.5 rounded-full transition-all ${
+                        className={`h-2 rounded-full transition-all ${
                           suggestion.data.opportunityScore >= 60
                             ? "bg-emerald-600"
                             : suggestion.data.opportunityScore >= 30
@@ -347,7 +318,7 @@ function AISuggestionsPage({ darkMode }) {
                           ? darkMode ? "text-red-400" : "text-red-700"
                           : darkMode ? "text-blue-400" : "text-blue-700"
                       }`}>
-                        💡 Recommendation: {suggestion.data.recommendation.replace(/_/g, ' ')}
+                        Recommendation: {suggestion.data.recommendation.replace(/_/g, ' ')}
                       </p>
                     )}
                   </div>
@@ -355,11 +326,11 @@ function AISuggestionsPage({ darkMode }) {
 
                 {/* Action & Impact */}
                 {suggestion.action && (
-                  <div className={`mb-3 p-3 rounded-lg ${
+                  <div className={`mb-3 p-3 rounded ${
                     darkMode ? "bg-gray-700/50" : "bg-indigo-50"
                   }`}>
                     <p className={`text-xs font-semibold mb-1 ${darkMode ? "text-indigo-400" : "text-indigo-700"}`}>
-                      💡 Suggested Action:
+                      Suggested Action:
                     </p>
                     <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
                       {suggestion.action}
@@ -368,11 +339,11 @@ function AISuggestionsPage({ darkMode }) {
                 )}
 
                 {suggestion.impact && (
-                  <div className={`p-3 rounded-lg ${
-                    darkMode ? "bg-emerald-900/30" : "bg-emerald-50"
+                  <div className={`p-3 rounded ${
+                    darkMode ? "bg-emerald-900/20" : "bg-emerald-50"
                   }`}>
                     <p className={`text-xs font-semibold mb-1 ${darkMode ? "text-emerald-400" : "text-emerald-700"}`}>
-                      📊 Expected Impact:
+                      Expected Impact:
                     </p>
                     <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
                       {suggestion.impact}
@@ -420,30 +391,30 @@ function AISuggestionsPage({ darkMode }) {
 
       {/* Summary Stats */}
       {!loading && suggestions.length > 0 && (
-        <div className={`rounded-xl border p-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+        <div className={`rounded-lg border p-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
           <h3 className={`font-semibold mb-4 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
             Analysis Summary
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className={`p-4 rounded-lg ${darkMode ? "bg-red-900/30" : "bg-red-50"}`}>
+            <div className={`p-4 rounded ${darkMode ? "bg-red-900/20" : "bg-red-50"}`}>
               <p className={`text-2xl font-bold ${darkMode ? "text-red-400" : "text-red-600"}`}>
                 {suggestions.filter(s => s.priority === "high").length}
               </p>
               <p className={`text-xs mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>High Priority</p>
             </div>
-            <div className={`p-4 rounded-lg ${darkMode ? "bg-amber-900/30" : "bg-amber-50"}`}>
+            <div className={`p-4 rounded ${darkMode ? "bg-amber-900/20" : "bg-amber-50"}`}>
               <p className={`text-2xl font-bold ${darkMode ? "text-amber-400" : "text-amber-600"}`}>
                 {suggestions.filter(s => s.priority === "medium").length}
               </p>
               <p className={`text-xs mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Medium Priority</p>
             </div>
-            <div className={`p-4 rounded-lg ${darkMode ? "bg-blue-900/30" : "bg-blue-50"}`}>
+            <div className={`p-4 rounded ${darkMode ? "bg-blue-900/20" : "bg-blue-50"}`}>
               <p className={`text-2xl font-bold ${darkMode ? "text-blue-400" : "text-blue-600"}`}>
                 {suggestions.filter(s => s.priority === "low").length}
               </p>
               <p className={`text-xs mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Low Priority</p>
             </div>
-            <div className={`p-4 rounded-lg ${darkMode ? "bg-emerald-900/30" : "bg-emerald-50"}`}>
+            <div className={`p-4 rounded ${darkMode ? "bg-emerald-900/20" : "bg-emerald-50"}`}>
               <p className={`text-2xl font-bold ${darkMode ? "text-emerald-400" : "text-emerald-600"}`}>
                 {suggestions.filter(s => s.actedUpon).length}
               </p>

@@ -75,6 +75,21 @@ export function AuthProvider({ children }) {
     window.location.href = url;
   };
 
+  const loginWithDemo = async () => {
+    try {
+      const res = await fetch(`${API_URL}/auth/demo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      const { token, user } = await res.json();
+      setUser(user);
+      setToken(token);
+      localStorage.setItem("authToken", token);
+    } catch (err) {
+      console.error("Demo login failed:", err);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -82,7 +97,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, loginWithGoogle, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, loginWithGoogle, loginWithDemo, logout }}>
       {children}
     </AuthContext.Provider>
   );
