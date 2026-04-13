@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp, Lightbulb } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp, Lightbulb, Clock, Zap, Calendar } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, Area, AreaChart, CartesianGrid } from "recharts";
 import { AuthContext } from "./AuthContext";
 import LoginPage from "./LoginPage";
 import AISuggestionsPage from "./AISuggestionsPage";
@@ -55,6 +55,7 @@ function App() {
 
   // Mobile Sidebar Toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dashboardPeriod, setDashboardPeriod] = useState("30"); // days
 
   // Loading States
   const [loading, setLoading] = useState(true);
