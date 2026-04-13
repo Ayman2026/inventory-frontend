@@ -111,7 +111,7 @@ function AISuggestionsPage({ darkMode }) {
       seasonal: "Seasonal Trend",
       bundle: "Bundle Opportunity",
       clearance: "Clearance",
-      trend: "Trending"
+      trend: "Product Focus"
     };
     return labels[type] || type;
   };
@@ -125,7 +125,14 @@ function AISuggestionsPage({ darkMode }) {
     { value: "seasonal", label: "Seasonal" },
     { value: "bundle", label: "Bundles" },
     { value: "clearance", label: "Clearance" },
-    { value: "trend", label: "Trends" }
+    { value: "trend", label: "Product Focus" }
+  ];
+
+  // Quick filter buttons
+  const quickFilters = [
+    { value: "all", label: "All", icon: Filter },
+    { value: "trend", label: "Focus", icon: Lightbulb },
+    { value: "reorder", label: "Urgent", icon: AlertTriangle }
   ];
 
   return (
@@ -154,6 +161,30 @@ function AISuggestionsPage({ darkMode }) {
           <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
           {refreshing ? "Analyzing..." : "Refresh Analysis"}
         </button>
+      </div>
+
+      {/* Quick Filters */}
+      <div className="flex gap-3">
+        {quickFilters.map(filter => {
+          const Icon = filter.icon;
+          const isActive = filterType === filter.value;
+          return (
+            <button
+              key={filter.value}
+              onClick={() => setFilterType(filter.value)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition ${
+                isActive
+                  ? "bg-indigo-600 text-white shadow-lg"
+                  : darkMode
+                  ? "bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border border-gray-300"
+              }`}
+            >
+              <Icon size={16} />
+              {filter.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Filters */}
@@ -270,6 +301,57 @@ function AISuggestionsPage({ darkMode }) {
                 <p className={`mb-4 text-sm leading-relaxed ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
                   {suggestion.description}
                 </p>
+
+                {/* Opportunity Score Badge for Product Focus suggestions */}
+                {suggestion.type === 'trend' && suggestion.data?.opportunityScore !== undefined && (
+                  <div className={`mb-4 p-4 rounded-lg border-2 ${
+                    suggestion.data.opportunityScore >= 60
+                      ? darkMode ? "bg-emerald-900/30 border-emerald-700" : "bg-emerald-50 border-emerald-300"
+                      : suggestion.data.opportunityScore >= 30
+                      ? darkMode ? "bg-amber-900/30 border-amber-700" : "bg-amber-50 border-amber-300"
+                      : darkMode ? "bg-red-900/30 border-red-700" : "bg-red-50 border-red-300"
+                  }`}>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className={`text-xs font-semibold uppercase ${
+                        darkMode ? "text-gray-400" : "text-gray-600"
+                      }`}>
+                        Opportunity Score
+                      </span>
+                      <span className={`text-2xl font-bold ${
+                        suggestion.data.opportunityScore >= 60
+                          ? darkMode ? "text-emerald-400" : "text-emerald-600"
+                          : suggestion.data.opportunityScore >= 30
+                          ? darkMode ? "text-amber-400" : "text-amber-600"
+                          : darkMode ? "text-red-400" : "text-red-600"
+                      }`}>
+                        {suggestion.data.opportunityScore}/100
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                      <div
+                        className={`h-2.5 rounded-full transition-all ${
+                          suggestion.data.opportunityScore >= 60
+                            ? "bg-emerald-600"
+                            : suggestion.data.opportunityScore >= 30
+                            ? "bg-amber-500"
+                            : "bg-red-500"
+                        }`}
+                        style={{ width: `${suggestion.data.opportunityScore}%` }}
+                      ></div>
+                    </div>
+                    {suggestion.data.recommendation && (
+                      <p className={`mt-2 text-xs font-medium ${
+                        suggestion.data.recommendation === 'INCREASE_INVESTMENT'
+                          ? darkMode ? "text-emerald-400" : "text-emerald-700"
+                          : suggestion.data.recommendation === 'REDUCE_OR_DISCONTINUE'
+                          ? darkMode ? "text-red-400" : "text-red-700"
+                          : darkMode ? "text-blue-400" : "text-blue-700"
+                      }`}>
+                        💡 Recommendation: {suggestion.data.recommendation.replace(/_/g, ' ')}
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 {/* Action & Impact */}
                 {suggestion.action && (
