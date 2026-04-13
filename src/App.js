@@ -40,6 +40,15 @@ function App() {
   const [operation, setOperation] = useState("");
   const [changeValue, setChangeValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  // Debounce search input (200ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
   const [note, setNote] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
 
@@ -94,9 +103,9 @@ function App() {
 
   const fetchHistory = () => {
     setHistoryLoading(true);
-    api("/history")
+    api("/history?page=1&limit=100")
       .then(data => {
-        setHistory(data);
+        setHistory(data.data || []);
         setHistoryLoading(false);
       })
       .catch(() => setHistoryLoading(false));
@@ -902,7 +911,7 @@ function App() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                   {getSortedProducts(
                     products.filter(p =>
-                      p.name.toLowerCase().includes(searchQuery.toLowerCase())
+                      p.name.toLowerCase().includes(debouncedSearch.toLowerCase())
                     )
                   ).map(p => (
                 <div key={p._id} className={`border rounded-xl shadow-sm hover:shadow-md hover:border-gray-300 transition-all overflow-hidden ${
