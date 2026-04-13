@@ -538,48 +538,377 @@ function App() {
           {/* DASHBOARD */}
           {page === "dashboard" && (
             <>
-              {loading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
-                  <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+              {/* Period Selector */}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div>
+                  <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>Dashboard Overview</h2>
+                  <p className={`text-sm mt-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                    Track your inventory performance and insights
+                  </p>
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5 mb-8">
+                <div className={`flex items-center gap-2 p-1 rounded-lg ${darkMode ? "bg-gray-800" : "bg-gray-100"}`}>
                   {[
-                    { label: "Total Products", value: totalProducts, color: "bg-indigo-50 border-indigo-200 text-indigo-700", darkColor: "bg-indigo-900/40 border-indigo-700 text-indigo-300", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" },
-                    { label: "Total Stock", value: totalStock, color: "bg-emerald-50 border-emerald-200 text-emerald-700", darkColor: "bg-emerald-900/40 border-emerald-700 text-emerald-300", icon: "M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" },
-                    { label: "Approaching", value: approachingStock, color: "bg-amber-50 border-amber-200 text-amber-700", darkColor: "bg-amber-900/40 border-amber-700 text-amber-300", icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" },
-                    { label: "Low Stock", value: lowStock, color: "bg-red-50 border-red-200 text-red-700 cursor-pointer hover:shadow-md transition", darkColor: "bg-red-900/40 border-red-700 text-red-300 cursor-pointer hover:shadow-md transition", icon: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z", onClick: () => setPage("lowstock") },
-                    { label: "Total Worth", value: `₹${totalValue.toLocaleString()}`, color: "bg-purple-50 border-purple-200 text-purple-700 cursor-pointer hover:shadow-md transition", darkColor: "bg-purple-900/40 border-purple-700 text-purple-300 cursor-pointer hover:shadow-md transition", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z", onClick: () => setPage("worth") },
-                    { label: "Top Movers", value: topMovers.length > 0 ? topMovers[0].name : "—", color: "bg-orange-50 border-orange-200 text-orange-700 cursor-pointer hover:shadow-md transition", darkColor: "bg-orange-900/40 border-orange-700 text-orange-300 cursor-pointer hover:shadow-md transition", icon: "M13 7h8m0 0v8m0-8l-8 8-4-4-6 6", onClick: () => setPage("topmovers") }
-                  ].map((card, i) => (
-                    <div
-                      key={i}
-                      onClick={card.onClick}
-                      className={`${darkMode ? card.darkColor : card.color} border rounded-xl p-5 transition-all ${card.onClick ? "cursor-pointer" : ""}`}
+                    { value: "7", label: "7D" },
+                    { value: "30", label: "30D" },
+                    { value: "90", label: "90D" }
+                  ].map(period => (
+                    <button
+                      key={period.value}
+                      onClick={() => setDashboardPeriod(period.value)}
+                      className={`px-4 py-2 rounded-md text-sm font-semibold transition ${
+                        dashboardPeriod === period.value
+                          ? "bg-indigo-600 text-white shadow-sm"
+                          : darkMode
+                          ? "text-gray-400 hover:text-white hover:bg-gray-700"
+                          : "text-gray-600 hover:text-gray-900 hover:bg-white"
+                      }`}
                     >
-                      <div className="flex items-start justify-between mb-3">
-                        <p className="text-xs font-semibold uppercase tracking-wider opacity-70">{card.label}</p>
-                        <svg className="h-5 w-5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={card.icon} />
-                        </svg>
-                      </div>
-                      <p className="text-2xl font-bold">{card.value}</p>
-                    </div>
+                      {period.label}
+                    </button>
                   ))}
                 </div>
-              )}
-
-              <div className={`border rounded-xl shadow-sm p-8 overflow-x-auto transition-colors duration-300 ${
-                darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-              }`}>
-                <h3 className={`text-sm font-semibold uppercase tracking-wider mb-6 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Stock Overview</h3>
-                <BarChart width={600} height={300} data={chartData}>
-                  <XAxis dataKey="name"/>
-                  <YAxis/>
-                  <Tooltip/>
-                  <Bar dataKey="quantity" fill="#3b82f6" radius={[8, 8, 0, 0]}/>
-                </BarChart>
               </div>
+
+              {loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-8">
+                  <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+                </div>
+              ) : (
+                <>
+                  {/* Stat Cards */}
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-8">
+                    {[
+                      { 
+                        label: "Total Products", 
+                        value: totalProducts, 
+                        color: "indigo",
+                        icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4",
+                        onClick: () => setPage("products")
+                      },
+                      { 
+                        label: "Total Stock", 
+                        value: totalStock.toLocaleString(), 
+                        color: "emerald",
+                        icon: "M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                      },
+                      { 
+                        label: "Total Value", 
+                        value: `₹${totalValue.toLocaleString()}`, 
+                        color: "purple",
+                        icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+                        onClick: () => setPage("worth")
+                      },
+                      { 
+                        label: "Low Stock Alerts", 
+                        value: lowStock, 
+                        color: lowStock > 0 ? "red" : "gray",
+                        icon: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+                        onClick: () => setPage("lowstock")
+                      }
+                    ].map((card, i) => {
+                      const colors = {
+                        indigo: darkMode ? "bg-indigo-900/30 border-indigo-700" : "bg-indigo-50 border-indigo-200",
+                        emerald: darkMode ? "bg-emerald-900/30 border-emerald-700" : "bg-emerald-50 border-emerald-200",
+                        purple: darkMode ? "bg-purple-900/30 border-purple-700" : "bg-purple-50 border-purple-200",
+                        red: darkMode ? "bg-red-900/30 border-red-700" : "bg-red-50 border-red-200",
+                        gray: darkMode ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
+                      };
+                      const textColors = {
+                        indigo: darkMode ? "text-indigo-400" : "text-indigo-600",
+                        emerald: darkMode ? "text-emerald-400" : "text-emerald-600",
+                        purple: darkMode ? "text-purple-400" : "text-purple-600",
+                        red: darkMode ? "text-red-400" : "text-red-600",
+                        gray: darkMode ? "text-gray-400" : "text-gray-600"
+                      };
+                      return (
+                        <div
+                          key={i}
+                          onClick={card.onClick}
+                          className={`${colors[card.color]} border rounded-xl p-5 transition-all hover:shadow-md ${card.onClick ? "cursor-pointer" : ""}`}
+                        >
+                          <div className="flex items-start justify-between mb-3">
+                            <div className={`p-2 rounded-lg ${darkMode ? "bg-white/10" : "bg-white"}`}>
+                              <svg className={`h-5 w-5 ${textColors[card.color]}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={card.icon} />
+                              </svg>
+                            </div>
+                          </div>
+                          <p className={`text-xs font-semibold uppercase tracking-wider mb-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                            {card.label}
+                          </p>
+                          <p className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>
+                            {card.value}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Charts Grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    {/* Stock Trend (Line Chart) */}
+                    <div className={`rounded-xl border p-6 transition-colors ${
+                      darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                    }`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className={`text-sm font-semibold uppercase tracking-wider ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                            Stock Trend
+                          </h3>
+                          <p className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                            Stock movements over time
+                          </p>
+                        </div>
+                        <TrendingUp size={20} className={darkMode ? "text-gray-600" : "text-gray-400"} />
+                      </div>
+                      {history.length === 0 ? (
+                        <div className={`h-64 flex items-center justify-center ${darkMode ? "text-gray-600" : "text-gray-400"}`}>
+                          <p className="text-sm">No stock movements yet</p>
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={280}>
+                          <AreaChart data={chartData.slice(0, 10)}>
+                            <defs>
+                              <linearGradient id="colorQuantity" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
+                            <XAxis dataKey="name" stroke={darkMode ? "#9ca3af" : "#6b7280"} fontSize={12} />
+                            <YAxis stroke={darkMode ? "#9ca3af" : "#6b7280"} fontSize={12} />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: darkMode ? "#1f2937" : "#fff",
+                                border: `1px solid ${darkMode ? "#374151" : "#e5e7eb"}`,
+                                borderRadius: "8px"
+                              }}
+                            />
+                            <Area 
+                              type="monotone" 
+                              dataKey="quantity" 
+                              stroke="#3b82f6" 
+                              strokeWidth={2}
+                              fillOpacity={1} 
+                              fill="url(#colorQuantity)" 
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+
+                    {/* Stock Overview (Bar Chart) */}
+                    <div className={`rounded-xl border p-6 transition-colors ${
+                      darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                    }`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className={`text-sm font-semibold uppercase tracking-wider ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                            Stock Overview
+                          </h3>
+                          <p className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                            Current stock levels by product
+                          </p>
+                        </div>
+                        <Package size={20} className={darkMode ? "text-gray-600" : "text-gray-400"} />
+                      </div>
+                      {products.length === 0 ? (
+                        <div className={`h-64 flex items-center justify-center ${darkMode ? "text-gray-600" : "text-gray-400"}`}>
+                          <p className="text-sm">No products added yet</p>
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={280}>
+                          <BarChart data={chartData.slice(0, 10)}>
+                            <CartesianGrid strokeDasharray="3 3" stroke={darkMode ? "#374151" : "#e5e7eb"} />
+                            <XAxis dataKey="name" stroke={darkMode ? "#9ca3af" : "#6b7280"} fontSize={12} />
+                            <YAxis stroke={darkMode ? "#9ca3af" : "#6b7280"} fontSize={12} />
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: darkMode ? "#1f2937" : "#fff",
+                                border: `1px solid ${darkMode ? "#374151" : "#e5e7eb"}`,
+                                borderRadius: "8px"
+                              }}
+                            />
+                            <Bar dataKey="quantity" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Second Row - Value Distribution & Recent Activity */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    {/* Value Distribution (Pie Chart) */}
+                    <div className={`rounded-xl border p-6 transition-colors ${
+                      darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                    }`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className={`text-sm font-semibold uppercase tracking-wider ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                            Value Distribution
+                          </h3>
+                          <p className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                            Stock value by product
+                          </p>
+                        </div>
+                      </div>
+                      {products.length === 0 ? (
+                        <div className={`h-64 flex items-center justify-center ${darkMode ? "text-gray-600" : "text-gray-400"}`}>
+                          <p className="text-sm">No data available</p>
+                        </div>
+                      ) : (
+                        <ResponsiveContainer width="100%" height={280}>
+                          <PieChart>
+                            <Pie
+                              data={products.slice(0, 6).map(p => ({
+                                name: p.name,
+                                value: p.quantity * p.price
+                              }))}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                              outerRadius={80}
+                              fill="#8884d8"
+                              dataKey="value"
+                            >
+                              {products.slice(0, 6).map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'][index % 6]} />
+                              ))}
+                            </Pie>
+                            <Tooltip 
+                              contentStyle={{ 
+                                backgroundColor: darkMode ? "#1f2937" : "#fff",
+                                border: `1px solid ${darkMode ? "#374151" : "#e5e7eb"}`,
+                                borderRadius: "8px"
+                              }}
+                            />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      )}
+                    </div>
+
+                    {/* Recent Activity Feed */}
+                    <div className={`rounded-xl border p-6 lg:col-span-2 transition-colors ${
+                      darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                    }`}>
+                      <div className="flex items-center justify-between mb-4">
+                        <div>
+                          <h3 className={`text-sm font-semibold uppercase tracking-wider ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                            Recent Activity
+                          </h3>
+                          <p className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                            Latest stock movements
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => setPage("history")}
+                          className={`text-xs font-semibold px-3 py-1.5 rounded transition ${
+                            darkMode ? "text-indigo-400 hover:bg-gray-700" : "text-indigo-600 hover:bg-gray-100"
+                          }`}
+                        >
+                          View All →
+                        </button>
+                      </div>
+                      {history.length === 0 ? (
+                        <div className={`h-64 flex items-center justify-center ${darkMode ? "text-gray-600" : "text-gray-400"}`}>
+                          <div className="text-center">
+                            <Clock size={40} className={`mx-auto mb-3 ${darkMode ? "text-gray-700" : "text-gray-300"}`} />
+                            <p className="text-sm">No activity yet</p>
+                            <p className="text-xs mt-1">Start adding or removing products to see activity</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                          {history.slice(0, 8).map((entry, idx) => {
+                            const isAdd = entry.change.startsWith('+');
+                            const isUpdate = entry.change.includes('Updated');
+                            const borderColor = isUpdate 
+                              ? darkMode ? 'border-gray-600' : 'border-gray-300'
+                              : isAdd 
+                              ? darkMode ? 'border-emerald-700' : 'border-emerald-300'
+                              : darkMode ? 'border-red-700' : 'border-red-300';
+                            const bgColor = isUpdate 
+                              ? darkMode ? 'bg-gray-700/50' : 'bg-gray-50'
+                              : isAdd 
+                              ? darkMode ? 'bg-emerald-900/20' : 'bg-emerald-50'
+                              : darkMode ? 'bg-red-900/20' : 'bg-red-50';
+                            return (
+                              <div
+                                key={idx}
+                                className={`p-3 rounded-lg border-l-4 ${borderColor} ${bgColor} transition hover:shadow-sm`}
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <p className={`text-sm font-semibold truncate ${darkMode ? "text-white" : "text-gray-900"}`}>
+                                      {entry.name}
+                                    </p>
+                                    <p className={`text-xs mt-0.5 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                                      {entry.note || 'No notes'}
+                                    </p>
+                                  </div>
+                                  <div className="text-right flex-shrink-0">
+                                    <p className={`text-sm font-bold ${
+                                      isUpdate 
+                                        ? darkMode ? 'text-gray-400' : 'text-gray-600'
+                                        : isAdd 
+                                        ? 'text-emerald-600' 
+                                        : 'text-red-600'
+                                    }`}>
+                                      {entry.change}
+                                    </p>
+                                    <p className={`text-xs mt-0.5 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                                      {new Date(entry.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Quick Actions */}
+                  <div className={`rounded-xl border p-6 transition-colors ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                  }`}>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Zap size={18} className={darkMode ? "text-amber-400" : "text-amber-600"} />
+                      <h3 className={`text-sm font-semibold uppercase tracking-wider ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                        Quick Actions
+                      </h3>
+                    </div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {[
+                        { label: "Add Product", icon: Plus, page: "add", color: "indigo" },
+                        { label: "View Products", icon: Package, page: "products", color: "emerald" },
+                        { label: "View History", icon: Clock, page: "history", color: "purple" },
+                        { label: "AI Suggestions", icon: Lightbulb, page: "suggestions", color: "amber" }
+                      ].map((action, idx) => {
+                        const Icon = action.icon;
+                        const colors = {
+                          indigo: darkMode ? "bg-indigo-900/30 hover:bg-indigo-900/50 border-indigo-700 text-indigo-400" : "bg-indigo-50 hover:bg-indigo-100 border-indigo-200 text-indigo-600",
+                          emerald: darkMode ? "bg-emerald-900/30 hover:bg-emerald-900/50 border-emerald-700 text-emerald-400" : "bg-emerald-50 hover:bg-emerald-100 border-emerald-200 text-emerald-600",
+                          purple: darkMode ? "bg-purple-900/30 hover:bg-purple-900/50 border-purple-700 text-purple-400" : "bg-purple-50 hover:bg-purple-100 border-purple-200 text-purple-600",
+                          amber: darkMode ? "bg-amber-900/30 hover:bg-amber-900/50 border-amber-700 text-amber-400" : "bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-600"
+                        };
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => setPage(action.page)}
+                            className={`p-4 rounded-lg border transition-all hover:shadow-md flex flex-col items-center gap-2 ${colors[action.color]}`}
+                          >
+                            <Icon size={24} strokeWidth={2} />
+                            <span className="text-sm font-semibold">{action.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
 
