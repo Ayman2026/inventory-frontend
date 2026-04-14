@@ -1467,6 +1467,7 @@ function App() {
                       <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
                         <tr>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Product Name</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Stock Status</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Category</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Subcategory</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Quantity</th>
@@ -1487,9 +1488,38 @@ function App() {
                             if (filterSubcategory && p.subcategory?._id !== filterSubcategory) return false;
                             return true;
                           })
-                          .map(p => (
+                          .map(p => {
+                            const totalStock = p.quantity + (p.damagedQuantity || 0);
+                            const goodPercentage = totalStock > 0 ? (p.quantity / totalStock) * 100 : 100;
+                            const damagedPercentage = totalStock > 0 ? ((p.damagedQuantity || 0) / totalStock) * 100 : 0;
+                            
+                            return (
                           <tr key={p._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
                             <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</td>
+                            <td className="px-6 py-4">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className={darkMode ? "text-emerald-400" : "text-emerald-600"}>Good: {p.quantity}</span>
+                                  {p.damagedQuantity > 0 && (
+                                    <span className={darkMode ? "text-red-400" : "text-red-600"}>Damaged: {p.damagedQuantity}</span>
+                                  )}
+                                </div>
+                                <div className="flex h-2 w-32 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
+                                  <div 
+                                    className="bg-emerald-500" 
+                                    style={{ width: `${goodPercentage}%` }}
+                                    title={`Good: ${p.quantity} (${goodPercentage.toFixed(1)}%)`}
+                                  ></div>
+                                  {damagedPercentage > 0 && (
+                                    <div 
+                                      className="bg-red-500" 
+                                      style={{ width: `${damagedPercentage}%` }}
+                                      title={`Damaged: ${p.damagedQuantity} (${damagedPercentage.toFixed(1)}%)`}
+                                    ></div>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
                             <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
                               {p.category ? (
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -1526,7 +1556,8 @@ function App() {
                               </span>
                             </td>
                           </tr>
-                        ))}
+                            );
+                          })}
                       </tbody>
                     </table>
                   </div>
