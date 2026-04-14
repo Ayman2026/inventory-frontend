@@ -911,21 +911,18 @@ function App() {
                         </ResponsiveContainer>
                       )}
                     </div>
-                  </div>
 
-                  {/* Second Row - Value Distribution & Recent Activity */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                    {/* Value Distribution (Pie Chart) */}
+                    {/* Good vs Damaged Products (Pie Chart) */}
                     <div className={`rounded-xl border p-6 transition-colors ${
                       darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
                     }`}>
                       <div className="flex items-center justify-between mb-4">
                         <div>
                           <h3 className={`text-sm font-semibold uppercase tracking-wider ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                            Value Distribution
+                            Product Condition
                           </h3>
                           <p className={`text-xs mt-1 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
-                            Stock value by product
+                            Good vs Damaged
                           </p>
                         </div>
                       </div>
@@ -937,21 +934,21 @@ function App() {
                         <ResponsiveContainer width="100%" height={280}>
                           <PieChart>
                             <Pie
-                              data={products.slice(0, 6).map(p => ({
-                                name: p.name,
-                                value: p.quantity * p.price
-                              }))}
+                              data={[
+                                { name: 'Good Products', value: totalStock, fill: '#10b981' },
+                                { name: 'Damaged Products', value: totalDamagedQuantity, fill: '#ef4444' }
+                              ]}
                               cx="50%"
                               cy="50%"
                               labelLine={false}
-                              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                              label={({ name, percent, value }) => 
+                                value > 0 ? `${name.split(' ')[0]}: ${value} (${(percent * 100).toFixed(1)}%)` : null
+                              }
                               outerRadius={80}
-                              fill="#8884d8"
                               dataKey="value"
                             >
-                              {products.slice(0, 6).map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'][index % 6]} />
-                              ))}
+                              <Cell fill="#10b981" />
+                              <Cell fill="#ef4444" />
                             </Pie>
                             <Tooltip 
                               contentStyle={{ 
@@ -959,13 +956,16 @@ function App() {
                                 border: `1px solid ${darkMode ? "#374151" : "#e5e7eb"}`,
                                 borderRadius: "8px"
                               }}
+                              formatter={(value) => [`${value} units`, '']}
                             />
                           </PieChart>
                         </ResponsiveContainer>
                       )}
                     </div>
+                  </div>
 
-                    {/* Recent Activity Feed */}
+                  {/* Recent Activity Feed */}
+                  <div className="grid grid-cols-1 gap-6 mb-6">
                     <div className={`rounded-xl border p-6 transition-colors ${
                       darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
                     }`}>
