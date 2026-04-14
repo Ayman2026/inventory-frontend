@@ -1624,8 +1624,119 @@ function App() {
                 Select a product to record received stock
               </p>
               
+              {/* Filter Section */}
+              <div className={`border rounded-xl p-5 mb-6 transition-colors ${
+                darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+              }`}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Search */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Search Product
+                    </label>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by name..."
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                  </div>
+
+                  {/* Category Filter */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Category
+                    </label>
+                    <select
+                      value={filterCategory}
+                      onChange={(e) => {
+                        setFilterCategory(e.target.value);
+                        setFilterSubcategory("");
+                      }}
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map(cat => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Subcategory Filter */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Subcategory
+                    </label>
+                    <select
+                      value={filterSubcategory}
+                      onChange={(e) => setFilterSubcategory(e.target.value)}
+                      disabled={!filterCategory}
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      } ${!filterCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <option value="">All Subcategories</option>
+                      {categories.find(c => c._id === filterCategory)?.subcategories?.map(sub => (
+                        <option key={sub._id} value={sub._id}>{sub.name}</option>
+                      )) || subcategories.filter(s => s.categoryId === filterCategory).map(sub => (
+                        <option key={sub._id} value={sub._id}>{sub.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Active Filters Summary */}
+                {(searchQuery || filterCategory || filterSubcategory) && (
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <span className={`text-xs font-semibold ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Active filters:</span>
+                    {searchQuery && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Search: "{searchQuery}"
+                        <button onClick={() => setSearchQuery("")} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    {filterCategory && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Category: {categories.find(c => c._id === filterCategory)?.name}
+                        <button onClick={() => { setFilterCategory(""); setFilterSubcategory(""); }} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    {filterSubcategory && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}
+                        <button onClick={() => setFilterSubcategory("")} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setFilterCategory("");
+                        setFilterSubcategory("");
+                      }}
+                      className={`text-xs font-semibold px-2 py-1 rounded transition ${
+                        darkMode ? "text-red-400 hover:bg-red-900/20" : "text-red-600 hover:bg-red-50"
+                      }`}
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map(p => (
+                {products
+                  .filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                    const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                    const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                    return matchesSearch && matchesCategory && matchesSubcategory;
+                  })
+                  .map(p => (
                   <div key={p._id} className={`border rounded-xl p-6 transition hover:shadow-lg cursor-pointer ${
                     darkMode ? "bg-gray-800 border-gray-700 hover:border-emerald-500" : "bg-white border-gray-200 hover:border-emerald-500"
                   }`}
@@ -1633,6 +1744,11 @@ function App() {
                   >
                     <h3 className={`text-lg font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
                     <p className={`text-sm mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Current Stock: <span className="font-bold">{p.quantity}</span></p>
+                    {p.category && (
+                      <p className={`text-xs mb-2 ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
+                        Category: <span className="font-medium">{p.category.name || p.category}</span>
+                      </p>
+                    )}
                     <button className={`w-full py-2 rounded-lg font-medium transition ${
                       darkMode ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-emerald-500 hover:bg-emerald-600 text-white"
                     }`}>
@@ -1642,9 +1758,14 @@ function App() {
                 ))}
               </div>
               
-              {products.length === 0 && (
+              {products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                return matchesSearch && matchesCategory && matchesSubcategory;
+              }).length === 0 && (
                 <div className={`p-12 rounded-xl text-center ${darkMode ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-500"}`}>
-                  No products available.
+                  {products.length === 0 ? "No products available." : "No products match your filters."}
                 </div>
               )}
             </div>
@@ -1657,8 +1778,119 @@ function App() {
                 Select a product to record dispatched stock
               </p>
               
+              {/* Filter Section */}
+              <div className={`border rounded-xl p-5 mb-6 transition-colors ${
+                darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+              }`}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Search */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Search Product
+                    </label>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by name..."
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                  </div>
+
+                  {/* Category Filter */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Category
+                    </label>
+                    <select
+                      value={filterCategory}
+                      onChange={(e) => {
+                        setFilterCategory(e.target.value);
+                        setFilterSubcategory("");
+                      }}
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map(cat => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Subcategory Filter */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Subcategory
+                    </label>
+                    <select
+                      value={filterSubcategory}
+                      onChange={(e) => setFilterSubcategory(e.target.value)}
+                      disabled={!filterCategory}
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      } ${!filterCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <option value="">All Subcategories</option>
+                      {categories.find(c => c._id === filterCategory)?.subcategories?.map(sub => (
+                        <option key={sub._id} value={sub._id}>{sub.name}</option>
+                      )) || subcategories.filter(s => s.categoryId === filterCategory).map(sub => (
+                        <option key={sub._id} value={sub._id}>{sub.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Active Filters Summary */}
+                {(searchQuery || filterCategory || filterSubcategory) && (
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <span className={`text-xs font-semibold ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Active filters:</span>
+                    {searchQuery && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Search: "{searchQuery}"
+                        <button onClick={() => setSearchQuery("")} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    {filterCategory && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Category: {categories.find(c => c._id === filterCategory)?.name}
+                        <button onClick={() => { setFilterCategory(""); setFilterSubcategory(""); }} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    {filterSubcategory && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}
+                        <button onClick={() => setFilterSubcategory("")} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setFilterCategory("");
+                        setFilterSubcategory("");
+                      }}
+                      className={`text-xs font-semibold px-2 py-1 rounded transition ${
+                        darkMode ? "text-red-400 hover:bg-red-900/20" : "text-red-600 hover:bg-red-50"
+                      }`}
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map(p => (
+                {products
+                  .filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                    const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                    const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                    return matchesSearch && matchesCategory && matchesSubcategory;
+                  })
+                  .map(p => (
                   <div key={p._id} className={`border rounded-xl p-6 transition hover:shadow-lg cursor-pointer ${
                     darkMode ? "bg-gray-800 border-gray-700 hover:border-blue-500" : "bg-white border-gray-200 hover:border-blue-500"
                   }`}
@@ -1666,6 +1898,11 @@ function App() {
                   >
                     <h3 className={`text-lg font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
                     <p className={`text-sm mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Current Stock: <span className="font-bold">{p.quantity}</span></p>
+                    {p.category && (
+                      <p className={`text-xs mb-2 ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
+                        Category: <span className="font-medium">{p.category.name || p.category}</span>
+                      </p>
+                    )}
                     <button className={`w-full py-2 rounded-lg font-medium transition ${
                       darkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
                     }`}>
@@ -1675,9 +1912,14 @@ function App() {
                 ))}
               </div>
               
-              {products.length === 0 && (
+              {products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                return matchesSearch && matchesCategory && matchesSubcategory;
+              }).length === 0 && (
                 <div className={`p-12 rounded-xl text-center ${darkMode ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-500"}`}>
-                  No products available.
+                  {products.length === 0 ? "No products available." : "No products match your filters."}
                 </div>
               )}
             </div>
@@ -1690,8 +1932,119 @@ function App() {
                 Select a product to delete
               </p>
               
+              {/* Filter Section */}
+              <div className={`border rounded-xl p-5 mb-6 transition-colors ${
+                darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+              }`}>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Search */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Search Product
+                    </label>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by name..."
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                  </div>
+
+                  {/* Category Filter */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Category
+                    </label>
+                    <select
+                      value={filterCategory}
+                      onChange={(e) => {
+                        setFilterCategory(e.target.value);
+                        setFilterSubcategory("");
+                      }}
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map(cat => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Subcategory Filter */}
+                  <div>
+                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Subcategory
+                    </label>
+                    <select
+                      value={filterSubcategory}
+                      onChange={(e) => setFilterSubcategory(e.target.value)}
+                      disabled={!filterCategory}
+                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      } ${!filterCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    >
+                      <option value="">All Subcategories</option>
+                      {categories.find(c => c._id === filterCategory)?.subcategories?.map(sub => (
+                        <option key={sub._id} value={sub._id}>{sub.name}</option>
+                      )) || subcategories.filter(s => s.categoryId === filterCategory).map(sub => (
+                        <option key={sub._id} value={sub._id}>{sub.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Active Filters Summary */}
+                {(searchQuery || filterCategory || filterSubcategory) && (
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <span className={`text-xs font-semibold ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Active filters:</span>
+                    {searchQuery && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Search: "{searchQuery}"
+                        <button onClick={() => setSearchQuery("")} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    {filterCategory && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Category: {categories.find(c => c._id === filterCategory)?.name}
+                        <button onClick={() => { setFilterCategory(""); setFilterSubcategory(""); }} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    {filterSubcategory && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
+                        Subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}
+                        <button onClick={() => setFilterSubcategory("")} className="hover:text-red-500">✕</button>
+                      </span>
+                    )}
+                    <button
+                      onClick={() => {
+                        setSearchQuery("");
+                        setFilterCategory("");
+                        setFilterSubcategory("");
+                      }}
+                      className={`text-xs font-semibold px-2 py-1 rounded transition ${
+                        darkMode ? "text-red-400 hover:bg-red-900/20" : "text-red-600 hover:bg-red-50"
+                      }`}
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {products.map(p => (
+                {products
+                  .filter(p => {
+                    const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                    const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                    const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                    return matchesSearch && matchesCategory && matchesSubcategory;
+                  })
+                  .map(p => (
                   <div key={p._id} className={`border rounded-xl p-6 transition hover:shadow-lg ${
                     darkMode ? "bg-gray-800 border-gray-700 hover:border-red-500" : "bg-white border-gray-200 hover:border-red-500"
                   }`}>
@@ -1700,6 +2053,9 @@ function App() {
                       <p>Stock: <span className="font-bold">{p.quantity}</span></p>
                       <p>Price: <span className="font-bold">₹{p.price.toLocaleString()}</span></p>
                       <p>Value: <span className="font-bold">₹{(p.quantity * p.price).toLocaleString()}</span></p>
+                      {p.category && (
+                        <p>Category: <span className="font-medium">{p.category.name || p.category}</span></p>
+                      )}
                     </div>
                     <button 
                       onClick={() => {
@@ -1719,9 +2075,14 @@ function App() {
                 ))}
               </div>
               
-              {products.length === 0 && (
+              {products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                return matchesSearch && matchesCategory && matchesSubcategory;
+              }).length === 0 && (
                 <div className={`p-12 rounded-xl text-center ${darkMode ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-500"}`}>
-                  No products available.
+                  {products.length === 0 ? "No products available." : "No products match your filters."}
                 </div>
               )}
             </div>
