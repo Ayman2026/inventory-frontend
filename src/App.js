@@ -298,7 +298,6 @@ function App() {
     setSelectedSubcategory("");
     setEditId(null);
     fetchProducts();
-    setPage("dashboard");
     setSaving(false);
     showToast(editId ? "Product updated successfully!" : "Product added successfully!");
   };
