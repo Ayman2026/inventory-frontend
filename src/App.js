@@ -1620,43 +1620,33 @@ function App() {
           {/* PRODUCT RECEIVED */}
           {page === "products-received" && (
             <div>
-              <p className={`mb-6 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                Select a product to record received stock
-              </p>
-              
               {/* Filter Section */}
-              <div className={`border rounded-xl p-5 mb-6 transition-colors ${
+              <div className={`border rounded-lg p-4 mb-6 transition-colors ${
                 darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
               }`}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Search */}
-                  <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Search Product
-                    </label>
+                  <div className="md:col-span-2">
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search by name..."
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                      placeholder="🔍 Search products..."
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400" : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                       }`}
                     />
                   </div>
 
                   {/* Category Filter */}
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Category
-                    </label>
                     <select
                       value={filterCategory}
                       onChange={(e) => {
                         setFilterCategory(e.target.value);
                         setFilterSubcategory("");
                       }}
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
                         darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
                       }`}
                     >
@@ -1669,14 +1659,11 @@ function App() {
 
                   {/* Subcategory Filter */}
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Subcategory
-                    </label>
                     <select
                       value={filterSubcategory}
                       onChange={(e) => setFilterSubcategory(e.target.value)}
                       disabled={!filterCategory}
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
                         darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
                       } ${!filterCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
@@ -1690,39 +1677,28 @@ function App() {
                   </div>
                 </div>
 
-                {/* Active Filters Summary */}
+                {/* Clear Filters Button */}
                 {(searchQuery || filterCategory || filterSubcategory) && (
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <span className={`text-xs font-semibold ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Active filters:</span>
-                    {searchQuery && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Search: "{searchQuery}"
-                        <button onClick={() => setSearchQuery("")} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
-                    {filterCategory && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Category: {categories.find(c => c._id === filterCategory)?.name}
-                        <button onClick={() => { setFilterCategory(""); setFilterSubcategory(""); }} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
-                    {filterSubcategory && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}
-                        <button onClick={() => setFilterSubcategory("")} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      {products.filter(p => {
+                        const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                        const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                        const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                        return matchesSearch && matchesCategory && matchesSubcategory;
+                      }).length} products found
+                    </span>
                     <button
                       onClick={() => {
                         setSearchQuery("");
                         setFilterCategory("");
                         setFilterSubcategory("");
                       }}
-                      className={`text-xs font-semibold px-2 py-1 rounded transition ${
-                        darkMode ? "text-red-400 hover:bg-red-900/20" : "text-red-600 hover:bg-red-50"
+                      className={`text-xs font-medium px-3 py-1 rounded transition ${
+                        darkMode ? "text-indigo-400 hover:bg-gray-700" : "text-indigo-600 hover:bg-gray-100"
                       }`}
                     >
-                      Clear all
+                      Clear filters
                     </button>
                   </div>
                 )}
@@ -1742,14 +1718,18 @@ function App() {
                   }`}
                   onClick={() => openPopup(p, "receive")}
                   >
-                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
-                    <p className={`text-sm mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Current Stock: <span className="font-bold">{p.quantity}</span></p>
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
+                      <span className={`text-xs px-2 py-1 rounded ${darkMode ? "bg-emerald-900/30 text-emerald-400" : "bg-emerald-100 text-emerald-700"}`}>
+                        Stock: {p.quantity}
+                      </span>
+                    </div>
                     {p.category && (
-                      <p className={`text-xs mb-2 ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
-                        Category: <span className="font-medium">{p.category.name || p.category}</span>
+                      <p className={`text-xs mb-3 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                        📁 {p.category.name || p.category}
                       </p>
                     )}
-                    <button className={`w-full py-2 rounded-lg font-medium transition ${
+                    <button className={`w-full py-2.5 rounded-lg font-medium transition ${
                       darkMode ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-emerald-500 hover:bg-emerald-600 text-white"
                     }`}>
                       📦 Record Received
@@ -1774,43 +1754,33 @@ function App() {
           {/* PRODUCT DISPATCHED */}
           {page === "products-dispatched" && (
             <div>
-              <p className={`mb-6 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                Select a product to record dispatched stock
-              </p>
-              
               {/* Filter Section */}
-              <div className={`border rounded-xl p-5 mb-6 transition-colors ${
+              <div className={`border rounded-lg p-4 mb-6 transition-colors ${
                 darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
               }`}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Search */}
-                  <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Search Product
-                    </label>
+                  <div className="md:col-span-2">
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search by name..."
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                      placeholder="🔍 Search products..."
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400" : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                       }`}
                     />
                   </div>
 
                   {/* Category Filter */}
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Category
-                    </label>
                     <select
                       value={filterCategory}
                       onChange={(e) => {
                         setFilterCategory(e.target.value);
                         setFilterSubcategory("");
                       }}
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
                         darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
                       }`}
                     >
@@ -1823,14 +1793,11 @@ function App() {
 
                   {/* Subcategory Filter */}
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Subcategory
-                    </label>
                     <select
                       value={filterSubcategory}
                       onChange={(e) => setFilterSubcategory(e.target.value)}
                       disabled={!filterCategory}
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
                         darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
                       } ${!filterCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
@@ -1844,39 +1811,28 @@ function App() {
                   </div>
                 </div>
 
-                {/* Active Filters Summary */}
+                {/* Clear Filters Button */}
                 {(searchQuery || filterCategory || filterSubcategory) && (
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <span className={`text-xs font-semibold ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Active filters:</span>
-                    {searchQuery && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Search: "{searchQuery}"
-                        <button onClick={() => setSearchQuery("")} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
-                    {filterCategory && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Category: {categories.find(c => c._id === filterCategory)?.name}
-                        <button onClick={() => { setFilterCategory(""); setFilterSubcategory(""); }} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
-                    {filterSubcategory && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}
-                        <button onClick={() => setFilterSubcategory("")} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      {products.filter(p => {
+                        const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                        const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                        const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                        return matchesSearch && matchesCategory && matchesSubcategory;
+                      }).length} products found
+                    </span>
                     <button
                       onClick={() => {
                         setSearchQuery("");
                         setFilterCategory("");
                         setFilterSubcategory("");
                       }}
-                      className={`text-xs font-semibold px-2 py-1 rounded transition ${
-                        darkMode ? "text-red-400 hover:bg-red-900/20" : "text-red-600 hover:bg-red-50"
+                      className={`text-xs font-medium px-3 py-1 rounded transition ${
+                        darkMode ? "text-indigo-400 hover:bg-gray-700" : "text-indigo-600 hover:bg-gray-100"
                       }`}
                     >
-                      Clear all
+                      Clear filters
                     </button>
                   </div>
                 )}
@@ -1896,14 +1852,18 @@ function App() {
                   }`}
                   onClick={() => openPopup(p, "dispatch")}
                   >
-                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
-                    <p className={`text-sm mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Current Stock: <span className="font-bold">{p.quantity}</span></p>
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
+                      <span className={`text-xs px-2 py-1 rounded ${darkMode ? "bg-blue-900/30 text-blue-400" : "bg-blue-100 text-blue-700"}`}>
+                        Stock: {p.quantity}
+                      </span>
+                    </div>
                     {p.category && (
-                      <p className={`text-xs mb-2 ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
-                        Category: <span className="font-medium">{p.category.name || p.category}</span>
+                      <p className={`text-xs mb-3 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                        📁 {p.category.name || p.category}
                       </p>
                     )}
-                    <button className={`w-full py-2 rounded-lg font-medium transition ${
+                    <button className={`w-full py-2.5 rounded-lg font-medium transition ${
                       darkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
                     }`}>
                       🚚 Record Dispatched
@@ -1928,43 +1888,33 @@ function App() {
           {/* DELETE PRODUCT */}
           {page === "products-delete" && (
             <div>
-              <p className={`mb-6 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                Select a product to delete
-              </p>
-              
               {/* Filter Section */}
-              <div className={`border rounded-xl p-5 mb-6 transition-colors ${
+              <div className={`border rounded-lg p-4 mb-6 transition-colors ${
                 darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
               }`}>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   {/* Search */}
-                  <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Search Product
-                    </label>
+                  <div className="md:col-span-2">
                     <input
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search by name..."
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                      placeholder="🔍 Search products..."
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400" : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                       }`}
                     />
                   </div>
 
                   {/* Category Filter */}
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Category
-                    </label>
                     <select
                       value={filterCategory}
                       onChange={(e) => {
                         setFilterCategory(e.target.value);
                         setFilterSubcategory("");
                       }}
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
                         darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
                       }`}
                     >
@@ -1977,14 +1927,11 @@ function App() {
 
                   {/* Subcategory Filter */}
                   <div>
-                    <label className={`block text-xs font-semibold uppercase tracking-wider mb-2 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      Subcategory
-                    </label>
                     <select
                       value={filterSubcategory}
                       onChange={(e) => setFilterSubcategory(e.target.value)}
                       disabled={!filterCategory}
-                      className={`w-full border rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                      className={`w-full border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
                         darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
                       } ${!filterCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
@@ -1998,39 +1945,28 @@ function App() {
                   </div>
                 </div>
 
-                {/* Active Filters Summary */}
+                {/* Clear Filters Button */}
                 {(searchQuery || filterCategory || filterSubcategory) && (
-                  <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <span className={`text-xs font-semibold ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Active filters:</span>
-                    {searchQuery && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Search: "{searchQuery}"
-                        <button onClick={() => setSearchQuery("")} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
-                    {filterCategory && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Category: {categories.find(c => c._id === filterCategory)?.name}
-                        <button onClick={() => { setFilterCategory(""); setFilterSubcategory(""); }} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
-                    {filterSubcategory && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${darkMode ? "bg-indigo-900/30 text-indigo-300" : "bg-indigo-100 text-indigo-700"}`}>
-                        Subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}
-                        <button onClick={() => setFilterSubcategory("")} className="hover:text-red-500">✕</button>
-                      </span>
-                    )}
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      {products.filter(p => {
+                        const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                        const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                        const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                        return matchesSearch && matchesCategory && matchesSubcategory;
+                      }).length} products found
+                    </span>
                     <button
                       onClick={() => {
                         setSearchQuery("");
                         setFilterCategory("");
                         setFilterSubcategory("");
                       }}
-                      className={`text-xs font-semibold px-2 py-1 rounded transition ${
-                        darkMode ? "text-red-400 hover:bg-red-900/20" : "text-red-600 hover:bg-red-50"
+                      className={`text-xs font-medium px-3 py-1 rounded transition ${
+                        darkMode ? "text-indigo-400 hover:bg-gray-700" : "text-indigo-600 hover:bg-gray-100"
                       }`}
                     >
-                      Clear all
+                      Clear filters
                     </button>
                   </div>
                 )}
@@ -2048,13 +1984,19 @@ function App() {
                   <div key={p._id} className={`border rounded-xl p-6 transition hover:shadow-lg ${
                     darkMode ? "bg-gray-800 border-gray-700 hover:border-red-500" : "bg-white border-gray-200 hover:border-red-500"
                   }`}>
-                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className={`text-lg font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
+                      <span className={`text-xs px-2 py-1 rounded ${darkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-700"}`}>
+                        Stock: {p.quantity}
+                      </span>
+                    </div>
                     <div className={`text-sm mb-4 space-y-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                      <p>Stock: <span className="font-bold">{p.quantity}</span></p>
-                      <p>Price: <span className="font-bold">₹{p.price.toLocaleString()}</span></p>
-                      <p>Value: <span className="font-bold">₹{(p.quantity * p.price).toLocaleString()}</span></p>
+                      <p>Price: <span className="font-semibold">₹{p.price.toLocaleString()}</span></p>
+                      <p>Value: <span className="font-semibold">₹{(p.quantity * p.price).toLocaleString()}</span></p>
                       {p.category && (
-                        <p>Category: <span className="font-medium">{p.category.name || p.category}</span></p>
+                        <p className={`text-xs ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
+                          📁 {p.category.name || p.category}
+                        </p>
                       )}
                     </div>
                     <button 
@@ -2065,7 +2007,7 @@ function App() {
                           () => deleteProduct(p._id)
                         );
                       }}
-                      className={`w-full py-2 rounded-lg font-medium transition ${
+                      className={`w-full py-2.5 rounded-lg font-medium transition ${
                         darkMode ? "bg-red-600 hover:bg-red-700 text-white" : "bg-red-500 hover:bg-red-600 text-white"
                       }`}
                     >
