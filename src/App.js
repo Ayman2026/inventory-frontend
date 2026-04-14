@@ -31,7 +31,8 @@ function App() {
     name: "",
     quantity: "",
     price: "",
-    minStock: ""
+    minStock: "",
+    damagedQuantity: ""
   });
 
   const [history, setHistory] = useState([]);
@@ -281,6 +282,7 @@ function App() {
         quantity: Number(form.quantity),
         price: Number(form.price),
         minStock: Number(form.minStock),
+        damagedQuantity: Number(form.damagedQuantity) || 0,
         category: selectedCategory || null,
         subcategory: selectedSubcategory || null
       })
@@ -298,7 +300,7 @@ function App() {
     });
     fetchHistory();
 
-    setForm({ name: "", quantity: "", price: "", minStock: "" });
+    setForm({ name: "", quantity: "", price: "", minStock: "", damagedQuantity: "" });
     setSelectedCategory("");
     setSelectedSubcategory("");
     setEditId(null);
@@ -1773,6 +1775,25 @@ function App() {
                       />
                     </div>
                   ))}
+
+                  {/* Damaged Quantity Field (Optional) */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <label className={`md:w-36 text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Damaged Quantity
+                      <span className={`ml-1 text-xs ${darkMode ? "text-gray-500" : "text-gray-400"}`}>(Optional)</span>
+                    </label>
+                    <input
+                      name="damagedQuantity"
+                      type="number"
+                      min="0"
+                      value={form.damagedQuantity}
+                      onChange={handleChange}
+                      placeholder="e.g., 5"
+                      className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    />
+                  </div>
 
                   {/* Category Dropdown */}
                   <div className="flex flex-col md:flex-row md:items-center gap-2">
