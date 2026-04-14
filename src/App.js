@@ -1332,6 +1332,8 @@ function App() {
                       <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
                         <tr>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Product Name</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Category</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Subcategory</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Quantity</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Price</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Min Stock</th>
@@ -1343,6 +1345,28 @@ function App() {
                         {products.map(p => (
                           <tr key={p._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
                             <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</td>
+                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              {p.category ? (
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  darkMode ? "bg-blue-900/30 text-blue-300" : "bg-blue-100 text-blue-700"
+                                }`}>
+                                  {p.category.name}
+                                </span>
+                              ) : (
+                                <span className={darkMode ? "text-gray-500" : "text-gray-400"}>—</span>
+                              )}
+                            </td>
+                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              {p.subcategory ? (
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  darkMode ? "bg-purple-900/30 text-purple-300" : "bg-purple-100 text-purple-700"
+                                }`}>
+                                  {p.subcategory.name}
+                                </span>
+                              ) : (
+                                <span className={darkMode ? "text-gray-500" : "text-gray-400"}>—</span>
+                              )}
+                            </td>
                             <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.quantity}</td>
                             <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>₹{p.price.toLocaleString()}</td>
                             <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.minStock}</td>
