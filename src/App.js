@@ -224,6 +224,8 @@ function App() {
   const approachingStock = products.filter(
     p => p.quantity > p.minStock && p.quantity <= p.minStock + 5
   ).length;
+  const damagedProducts = products.filter(p => p.damagedQuantity > 0).length;
+  const totalDamagedQuantity = products.reduce((sum, p) => sum + (p.damagedQuantity || 0), 0);
 
   const totalValue = products.reduce(
     (sum, p) => sum + p.quantity * p.price,
@@ -707,6 +709,7 @@ function App() {
                  page === "products-received" ? "Product Received" :
                  page === "products-dispatched" ? "Product Dispatched" :
                  page === "products-delete" ? "Delete Product" :
+                 page === "damaged" ? "Damaged Products" :
                  page}
               </h1>
               <p className="text-gray-400 text-xs mt-0.5">
@@ -776,13 +779,13 @@ function App() {
               </div>
 
               {loading ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-8">
-                  <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
+                  <SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard /><SkeletonCard />
                 </div>
               ) : (
                 <>
                   {/* Stat Cards */}
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mb-8">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-5 mb-8">
                     {[
                       { 
                         label: "Total Products", 
@@ -810,6 +813,13 @@ function App() {
                         color: lowStock > 0 ? "red" : "gray",
                         icon: "M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
                         onClick: () => setPage("lowstock")
+                      },
+                      { 
+                        label: "Damaged Products", 
+                        value: totalDamagedQuantity, 
+                        color: damagedProducts > 0 ? "orange" : "gray",
+                        icon: "M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z",
+                        onClick: () => setPage("damaged")
                       }
                     ].map((card, i) => {
                       const colors = {
@@ -817,6 +827,7 @@ function App() {
                         emerald: darkMode ? "bg-emerald-900/30 border-emerald-700" : "bg-emerald-50 border-emerald-200",
                         purple: darkMode ? "bg-purple-900/30 border-purple-700" : "bg-purple-50 border-purple-200",
                         red: darkMode ? "bg-red-900/30 border-red-700" : "bg-red-50 border-red-200",
+                        orange: darkMode ? "bg-orange-900/30 border-orange-700" : "bg-orange-50 border-orange-200",
                         gray: darkMode ? "bg-gray-800 border-gray-700" : "bg-gray-50 border-gray-200"
                       };
                       const textColors = {
@@ -824,6 +835,7 @@ function App() {
                         emerald: darkMode ? "text-emerald-400" : "text-emerald-600",
                         purple: darkMode ? "text-purple-400" : "text-purple-600",
                         red: darkMode ? "text-red-400" : "text-red-600",
+                        orange: darkMode ? "text-orange-400" : "text-orange-600",
                         gray: darkMode ? "text-gray-400" : "text-gray-600"
                       };
                       return (
@@ -1686,6 +1698,70 @@ function App() {
                           className="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600 transition"
                         >
                           Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* DAMAGED PRODUCTS */}
+          {page === "damaged" && (
+            <div>
+              <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                <h2 className={`text-2xl font-bold ${darkMode ? "text-orange-400" : "text-orange-600"}`}>⚠️ Damaged Products</h2>
+                <button
+                  onClick={() => setPage("dashboard")}
+                  className={`px-4 py-2 rounded-lg transition w-full md:w-auto ${
+                    darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                  }`}
+                >
+                  ← Back
+                </button>
+              </div>
+
+              {products.filter(p => p.damagedQuantity > 0).length === 0 ? (
+                <div className={`p-6 rounded-xl text-center text-lg font-semibold ${
+                  darkMode ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"
+                }`}>
+                  ✅ No damaged products!
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {products.filter(p => p.damagedQuantity > 0).map(p => (
+                    <div key={p._id} className={`p-4 rounded-lg shadow flex justify-between items-center border-l-4 border-orange-500 transition-colors ${
+                      darkMode ? "bg-gray-800" : "bg-white"
+                    }`}>
+                      <div>
+                        <h3 className={`font-bold text-lg ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
+                        <div className={`mt-1 space-y-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                          <p>Good Stock: <span className={`font-bold ${darkMode ? "text-emerald-400" : "text-emerald-600"}`}>{p.quantity}</span></p>
+                          <p>Damaged: <span className={`font-bold ${darkMode ? "text-orange-400" : "text-orange-600"}`}>{p.damagedQuantity}</span></p>
+                          <p>Total: <span className="font-bold">{p.quantity + p.damagedQuantity}</span></p>
+                          {p.category && (
+                            <p>Category: <span className="font-semibold">{p.category.name}</span></p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setForm(p);
+                            setEditId(p._id);
+                            setSelectedCategory(p.category?._id || "");
+                            setSelectedSubcategory(p.subcategory?._id || "");
+                            if (p.category?._id) {
+                              fetchSubcategories(p.category._id);
+                            }
+                            setPage("add");
+                          }}
+                          className={`px-3 py-1 rounded text-sm font-medium transition ${
+                            darkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
+                          }`}
+                        >
+                          Edit
                         </button>
                       </div>
                     </div>
