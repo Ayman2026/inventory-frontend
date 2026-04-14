@@ -266,7 +266,39 @@ function App() {
 
   // FORM
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    // Prevent negative values for number fields
+    if (name === 'quantity' || name === 'price' || name === 'minStock' || name === 'damagedQuantity') {
+      // Block negative values completely
+      if (value === '' || (parseFloat(value) >= 0 && !value.includes('-'))) {
+        setForm({ ...form, [name]: value });
+      }
+    } else {
+      setForm({ ...form, [name]: value });
+    }
+  };
+
+  // Prevent negative input in number fields
+  const preventNegativeInput = (e) => {
+    // Prevent minus, plus, e, E keys
+    if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
+  };
+
+  // Prevent pasting negative numbers
+  const preventNegativePaste = (e) => {
+    const pastedText = e.clipboardData.getData('text');
+    if (pastedText.includes('-') || parseFloat(pastedText) < 0) {
+      e.preventDefault();
+    }
+  };
+
+  // Prevent scrolling from changing number values
+  const preventScroll = (e) => {
+    e.target.blur();
+    e.preventDefault();
   };
 
   // ADD / UPDATE
@@ -1894,10 +1926,13 @@ function App() {
                         step={field.step}
                         value={form[field.name]}
                         onChange={handleChange}
-                        onKeyDown={(e) => {
-                          // Prevent negative sign, 'e', 'E', '+', '-' for number inputs
-                          if (field.type === "number" && (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E')) {
-                            e.preventDefault();
+                        onKeyDown={field.type === "number" ? preventNegativeInput : undefined}
+                        onPaste={field.type === "number" ? preventNegativePaste : undefined}
+                        onWheel={field.type === "number" ? preventScroll : undefined}
+                        onInput={(e) => {
+                          // Additional check to remove negative values if they somehow get through
+                          if (field.type === "number" && e.target.value && parseFloat(e.target.value) < 0) {
+                            e.target.value = '';
                           }
                         }}
                         placeholder={field.placeholder}
@@ -1920,10 +1955,13 @@ function App() {
                       min="0"
                       value={form.damagedQuantity}
                       onChange={handleChange}
-                      onKeyDown={(e) => {
-                        // Prevent negative sign, 'e', 'E', '+', '-'
-                        if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
-                          e.preventDefault();
+                      onKeyDown={preventNegativeInput}
+                      onPaste={preventNegativePaste}
+                      onWheel={preventScroll}
+                      onInput={(e) => {
+                        // Additional check to remove negative values if they somehow get through
+                        if (e.target.value && parseFloat(e.target.value) < 0) {
+                          e.target.value = '';
                         }
                       }}
                       placeholder="e.g., 5"
@@ -2507,7 +2545,12 @@ function App() {
                   max={operation === "dispatch" ? selectedProduct.quantity : undefined}
                   autoFocus
                   value={changeValue}
-                  onChange={(e) => setChangeValue(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || (parseFloat(value) >= 0 && !value.includes('-'))) {
+                      setChangeValue(value);
+                    }
+                  }}
                   onKeyDown={(e) => {
                     // Prevent negative sign, 'e', 'E', '+', '-'
                     if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
@@ -2515,6 +2558,24 @@ function App() {
                     }
                     if (e.key === "Enter" && changeValue) {
                       applyChange();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    // Prevent pasting negative numbers
+                    const pastedText = e.clipboardData.getData('text');
+                    if (pastedText.includes('-') || parseFloat(pastedText) < 0) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onWheel={(e) => {
+                    e.target.blur();
+                    e.preventDefault();
+                  }}
+                  onInput={(e) => {
+                    // Additional check to remove negative values if they somehow get through
+                    if (e.target.value && parseFloat(e.target.value) < 0) {
+                      e.target.value = '';
+                      setChangeValue('');
                     }
                   }}
                   placeholder={operation === "receive" ? "Enter good quantity received" : "Enter quantity to dispatch"}
@@ -2528,7 +2589,12 @@ function App() {
                     type="number"
                     min="0"
                     value={damagedValue}
-                    onChange={(e) => setDamagedValue(e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value === '' || (parseFloat(value) >= 0 && !value.includes('-'))) {
+                        setDamagedValue(value);
+                      }
+                    }}
                     onKeyDown={(e) => {
                       // Prevent negative sign, 'e', 'E', '+', '-'
                       if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
@@ -2536,6 +2602,24 @@ function App() {
                       }
                       if (e.key === "Enter" && changeValue) {
                         applyChange();
+                      }
+                    }}
+                    onPaste={(e) => {
+                      // Prevent pasting negative numbers
+                      const pastedText = e.clipboardData.getData('text');
+                      if (pastedText.includes('-') || parseFloat(pastedText) < 0) {
+                        e.preventDefault();
+                      }
+                    }}
+                    onWheel={(e) => {
+                      e.target.blur();
+                      e.preventDefault();
+                    }}
+                    onInput={(e) => {
+                      // Additional check to remove negative values if they somehow get through
+                      if (e.target.value && parseFloat(e.target.value) < 0) {
+                        e.target.value = '';
+                        setDamagedValue('');
                       }
                     }}
                     placeholder="Enter damaged quantity (optional)"
