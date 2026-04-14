@@ -36,6 +36,16 @@ function App() {
 
   const [history, setHistory] = useState([]);
 
+  // Category and Subcategory states
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [showAddSubcategory, setShowAddSubcategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newSubcategoryName, setNewSubcategoryName] = useState("");
+
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [operation, setOperation] = useState("");
   const [changeValue, setChangeValue] = useState("");
@@ -135,9 +145,50 @@ function App() {
       });
   };
 
+  const fetchCategories = () => {
+    api("/categories")
+      .then(data => setCategories(data))
+      .catch(() => {});
+  };
+
+  const fetchSubcategories = (categoryId) => {
+    if (!categoryId) {
+      setSubcategories([]);
+      return;
+    }
+    api(`/subcategories?categoryId=${categoryId}`)
+      .then(data => setSubcategories(data))
+      .catch(() => {});
+  };
+
+  const addCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    const data = await api("/categories", {
+      method: "POST",
+      body: JSON.stringify({ name: newCategoryName })
+    });
+    setCategories([...categories, data]);
+    setNewCategoryName("");
+    setShowAddCategory(false);
+    showToast("Category added successfully!");
+  };
+
+  const addSubcategory = async () => {
+    if (!newSubcategoryName.trim() || !selectedCategory) return;
+    const data = await api("/subcategories", {
+      method: "POST",
+      body: JSON.stringify({ name: newSubcategoryName, categoryId: selectedCategory })
+    });
+    setSubcategories([...subcategories, data]);
+    setNewSubcategoryName("");
+    setShowAddSubcategory(false);
+    showToast("Subcategory added successfully!");
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchHistory();
+    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -224,7 +275,9 @@ function App() {
         name: form.name,
         quantity: Number(form.quantity),
         price: Number(form.price),
-        minStock: Number(form.minStock)
+        minStock: Number(form.minStock),
+        category: selectedCategory || null,
+        subcategory: selectedSubcategory || null
       })
     });
 
@@ -241,6 +294,8 @@ function App() {
     fetchHistory();
 
     setForm({ name: "", quantity: "", price: "", minStock: "" });
+    setSelectedCategory("");
+    setSelectedSubcategory("");
     setEditId(null);
     fetchProducts();
     setPage("dashboard");
@@ -259,6 +314,11 @@ function App() {
   const editProduct = (p) => {
     setForm(p);
     setEditId(p._id);
+    setSelectedCategory(p.category || "");
+    setSelectedSubcategory(p.subcategory || "");
+    if (p.category) {
+      fetchSubcategories(p.category);
+    }
     setPage("add");
   };
 
@@ -943,6 +1003,18 @@ function App() {
                         <span className={darkMode ? "text-gray-400" : "text-gray-400"}>Min Stock</span>
                         <span className={`font-semibold ${darkMode ? "text-gray-200" : "text-gray-900"}`}>{p.minStock}</span>
                       </div>
+                      {p.category && (
+                        <div className="flex justify-between text-sm">
+                          <span className={darkMode ? "text-gray-400" : "text-gray-400"}>Category</span>
+                          <span className={`font-semibold ${darkMode ? "text-gray-200" : "text-gray-900"}`}>{p.category.name}</span>
+                        </div>
+                      )}
+                      {p.subcategory && (
+                        <div className="flex justify-between text-sm">
+                          <span className={darkMode ? "text-gray-400" : "text-gray-400"}>Subcategory</span>
+                          <span className={`font-semibold ${darkMode ? "text-gray-200" : "text-gray-900"}`}>{p.subcategory.name}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm">
                         <span className={darkMode ? "text-gray-400" : "text-gray-400"}>Value</span>
                         <span className={`font-semibold ${darkMode ? "text-indigo-400" : "text-indigo-600"}`}>₹{(p.quantity * p.price).toLocaleString()}</span>
@@ -1135,6 +1207,134 @@ function App() {
                       />
                     </div>
                   ))}
+
+                  {/* Category Dropdown */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <label className={`md:w-36 text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Category</label>
+                    <div className="flex-1 flex gap-2">
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => {
+                          setSelectedCategory(e.target.value);
+                          setSelectedSubcategory("");
+                          fetchSubcategories(e.target.value);
+                        }}
+                        className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+                          darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                        }`}
+                      >
+                        <option value="">Select Category</option>
+                        {categories.map(cat => (
+                          <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => setShowAddCategory(true)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                          darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                        }`}
+                        title="Add New Category"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Add New Category Modal */}
+                  {showAddCategory && (
+                    <div className="flex flex-col md:flex-row md:items-center gap-2">
+                      <label className={`md:w-36 text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>New Category</label>
+                      <div className="flex-1 flex gap-2">
+                        <input
+                          type="text"
+                          value={newCategoryName}
+                          onChange={(e) => setNewCategoryName(e.target.value)}
+                          placeholder="Enter category name"
+                          className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+                            darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                          }`}
+                          onKeyPress={(e) => e.key === 'Enter' && addCategory()}
+                        />
+                        <button
+                          onClick={addCategory}
+                          className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition"
+                        >
+                          Add
+                        </button>
+                        <button
+                          onClick={() => { setShowAddCategory(false); setNewCategoryName(""); }}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                          }`}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Subcategory Dropdown */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <label className={`md:w-36 text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Subcategory</label>
+                    <div className="flex-1 flex gap-2">
+                      <select
+                        value={selectedSubcategory}
+                        onChange={(e) => setSelectedSubcategory(e.target.value)}
+                        disabled={!selectedCategory}
+                        className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+                          darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                        } ${!selectedCategory ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <option value="">Select Subcategory</option>
+                        {subcategories.map(sub => (
+                          <option key={sub._id} value={sub._id}>{sub.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => { if (selectedCategory) setShowAddSubcategory(true); }}
+                        disabled={!selectedCategory}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition ${
+                          !selectedCategory ? 'opacity-50 cursor-not-allowed' : ''
+                        } ${darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"}`}
+                        title="Add New Subcategory"
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Add New Subcategory Modal */}
+                  {showAddSubcategory && (
+                    <div className="flex flex-col md:flex-row md:items-center gap-2">
+                      <label className={`md:w-36 text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>New Subcategory</label>
+                      <div className="flex-1 flex gap-2">
+                        <input
+                          type="text"
+                          value={newSubcategoryName}
+                          onChange={(e) => setNewSubcategoryName(e.target.value)}
+                          placeholder="Enter subcategory name"
+                          className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+                            darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
+                          }`}
+                          onKeyPress={(e) => e.key === 'Enter' && addSubcategory()}
+                        />
+                        <button
+                          onClick={addSubcategory}
+                          className="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition"
+                        >
+                          Add
+                        </button>
+                        <button
+                          onClick={() => { setShowAddSubcategory(false); setNewSubcategoryName(""); }}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                          }`}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <button
