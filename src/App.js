@@ -342,6 +342,15 @@ function App() {
 
   const applyChange = async () => {
     if (operation === "receive" || operation === "dispatch") {
+      // Validation for dispatch - cannot dispatch more than available good products
+      if (operation === "dispatch") {
+        const dispatchQty = Number(changeValue);
+        if (dispatchQty > selectedProduct.quantity) {
+          showToast(`Cannot dispatch ${dispatchQty} units. Only ${selectedProduct.quantity} good products available.`, "error");
+          return;
+        }
+      }
+      
       // New API endpoints for receive/dispatch
       const endpoint = operation === "receive" ? "receive" : "dispatch";
       
@@ -2472,9 +2481,18 @@ function App() {
                   )}
                 </p>
 
+                {operation === "dispatch" && (
+                  <div className={`mb-3 p-3 rounded-lg ${darkMode ? "bg-yellow-900/20 border border-yellow-700" : "bg-yellow-50 border border-yellow-200"}`}>
+                    <p className={`text-sm ${darkMode ? "text-yellow-400" : "text-yellow-700"}`}>
+                      ⚠️ Maximum dispatch: <span className="font-bold">{selectedProduct.quantity}</span> units (good products only)
+                    </p>
+                  </div>
+                )}
+
                 <input
                   type="number"
                   min="0"
+                  max={operation === "dispatch" ? selectedProduct.quantity : undefined}
                   autoFocus
                   value={changeValue}
                   onChange={(e) => setChangeValue(e.target.value)}
@@ -2483,7 +2501,7 @@ function App() {
                       applyChange();
                     }
                   }}
-                  placeholder={operation === "receive" ? "Enter good quantity received" : "Enter quantity"}
+                  placeholder={operation === "receive" ? "Enter good quantity received" : "Enter quantity to dispatch"}
                   className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-blue-500 text-lg transition-colors ${
                     darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "border-gray-300 text-gray-900"
                   }`}
