@@ -50,6 +50,7 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [operation, setOperation] = useState("");
   const [changeValue, setChangeValue] = useState("");
+  const [damagedValue, setDamagedValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -335,6 +336,7 @@ function App() {
     setSelectedProduct(product);
     setOperation(type);
     setChangeValue("");
+    setDamagedValue("");
     setNote("");
   };
 
@@ -343,15 +345,23 @@ function App() {
       // New API endpoints for receive/dispatch
       const endpoint = operation === "receive" ? "receive" : "dispatch";
       
+      const body = {
+        quantity: Number(changeValue),
+        note: note || (operation === "receive" ? "Product Received" : "Product Dispatched")
+      };
+      
+      // Add damaged quantity only for receive operation
+      if (operation === "receive" && damagedValue) {
+        body.damagedQuantity = Number(damagedValue);
+      }
+      
       await api(`/products/${selectedProduct._id}/${endpoint}`, {
         method: "POST",
-        body: JSON.stringify({
-          quantity: Number(changeValue),
-          note: note || (operation === "receive" ? "Product Received" : "Product Dispatched")
-        })
+        body: JSON.stringify(body)
       });
 
       setSelectedProduct(null);
+      setDamagedValue("");
       fetchProducts();
       fetchHistory();
       showToast(`Product ${operation === "receive" ? "received" : "dispatched"} successfully!`);
@@ -2424,6 +2434,11 @@ function App() {
                 </h3>
                 <p className={`mb-5 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                   {selectedProduct.name} — Current: <span className={`font-bold ${darkMode ? "text-gray-200" : "text-gray-800"}`}>{selectedProduct.quantity}</span>
+                  {selectedProduct.damagedQuantity > 0 && (
+                    <span className={`ml-2 ${darkMode ? "text-orange-400" : "text-orange-600"}`}>
+                      (Damaged: {selectedProduct.damagedQuantity})
+                    </span>
+                  )}
                 </p>
 
                 <input
@@ -2437,11 +2452,29 @@ function App() {
                       applyChange();
                     }
                   }}
-                  placeholder="Enter quantity"
+                  placeholder={operation === "receive" ? "Enter good quantity received" : "Enter quantity"}
                   className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-blue-500 text-lg transition-colors ${
                     darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "border-gray-300 text-gray-900"
                   }`}
                 />
+
+                {operation === "receive" && (
+                  <input
+                    type="number"
+                    min="0"
+                    value={damagedValue}
+                    onChange={(e) => setDamagedValue(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && changeValue) {
+                        applyChange();
+                      }
+                    }}
+                    placeholder="Enter damaged quantity (optional)"
+                    className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-orange-500 text-lg transition-colors ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "border-gray-300 text-gray-900"
+                    }`}
+                  />
+                )}
 
                 <input
                   type="text"
@@ -2467,7 +2500,10 @@ function App() {
                     OK
                   </button>
                   <button
-                    onClick={() => setSelectedProduct(null)}
+                    onClick={() => {
+                      setSelectedProduct(null);
+                      setDamagedValue("");
+                    }}
                     className={`flex-1 font-semibold py-2.5 rounded-lg transition ${
                       darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                     }`}
