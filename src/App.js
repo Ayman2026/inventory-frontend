@@ -51,6 +51,7 @@ function App() {
   const [changeValue, setChangeValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   // Debounce search input (200ms delay)
   useEffect(() => {
@@ -330,38 +331,57 @@ function App() {
   };
 
   const applyChange = async () => {
-    let newQty = selectedProduct.quantity;
+    if (operation === "receive" || operation === "dispatch") {
+      // New API endpoints for receive/dispatch
+      const endpoint = operation === "receive" ? "receive" : "dispatch";
+      
+      await api(`/products/${selectedProduct._id}/${endpoint}`, {
+        method: "POST",
+        body: JSON.stringify({
+          quantity: Number(changeValue),
+          note: note || (operation === "receive" ? "Product Received" : "Product Dispatched")
+        })
+      });
 
-    if (operation === "add") newQty += Number(changeValue);
-    else newQty -= Number(changeValue);
+      setSelectedProduct(null);
+      fetchProducts();
+      fetchHistory();
+      showToast(`Product ${operation === "receive" ? "received" : "dispatched"} successfully!`);
+    } else {
+      // Old logic for backward compatibility
+      let newQty = selectedProduct.quantity;
 
-    if (newQty < 0) newQty = 0;
+      if (operation === "add") newQty += Number(changeValue);
+      else newQty -= Number(changeValue);
 
-    const newEntry = {
-      name: selectedProduct.name,
-      change: operation === "add" ? `+${changeValue}` : `-${changeValue}`,
-      time: new Date().toLocaleString(),
-      note: note || "—"
-    };
+      if (newQty < 0) newQty = 0;
 
-    await api("/history", {
-      method: "POST",
-      body: JSON.stringify(newEntry)
-    });
+      const newEntry = {
+        name: selectedProduct.name,
+        change: operation === "add" ? `+${changeValue}` : `-${changeValue}`,
+        time: new Date().toLocaleString(),
+        note: note || "—"
+      };
 
-    fetchHistory();
+      await api("/history", {
+        method: "POST",
+        body: JSON.stringify(newEntry)
+      });
 
-    await api(`/products/${selectedProduct._id}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        ...selectedProduct,
-        quantity: newQty
-      })
-    });
+      fetchHistory();
 
-    setSelectedProduct(null);
-    fetchProducts();
-    showToast(`Stock ${operation === "add" ? "added" : "subtracted"} successfully!`);
+      await api(`/products/${selectedProduct._id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          ...selectedProduct,
+          quantity: newQty
+        })
+      });
+
+      setSelectedProduct(null);
+      fetchProducts();
+      showToast(`Stock ${operation === "add" ? "added" : "subtracted"} successfully!`);
+    }
   };
 
   const navItems = [
@@ -1020,29 +1040,102 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-4 gap-2">
-                      <button onClick={() => openPopup(p, "add")} className={`py-2 rounded-lg text-sm transition ${darkMode ? "bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-300" : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"}`} title="Add Stock">+</button>
-                      <button onClick={() => openPopup(p, "subtract")} className={`py-2 rounded-lg text-sm transition ${darkMode ? "bg-amber-900/30 hover:bg-amber-900/50 text-amber-300" : "bg-amber-50 hover:bg-amber-100 text-amber-700"}`} title="Subtract">−</button>
-                      <button onClick={() => editProduct(p)} className={`py-2 rounded-lg text-sm transition ${darkMode ? "bg-indigo-900/30 hover:bg-indigo-900/50 text-indigo-300" : "bg-indigo-50 hover:bg-indigo-100 text-indigo-700"}`} title="Edit">
-                        <svg className="h-4 w-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => {
-                          confirmAction(
-                            "Delete Product?",
-                            `Are you sure you want to delete "${p.name}"?`,
-                            () => deleteProduct(p._id)
-                          );
-                        }}
-                        className={`py-2 rounded-lg text-sm transition ${darkMode ? "bg-red-900/30 hover:bg-red-900/50 text-red-300" : "bg-red-50 hover:bg-red-100 text-red-700"}`}
-                        title="Delete"
+                    <div className="relative">
+                      <button 
+                        onClick={() => setOpenMenuId(openMenuId === p._id ? null : p._id)}
+                        className={`w-full py-3 px-4 rounded-lg text-sm font-semibold transition flex items-center justify-center gap-2 ${
+                          darkMode ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                        }`}
                       >
-                        <svg className="h-4 w-4 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                        </svg>
+                        Manage Product
+                        <svg className={`h-4 w-4 transition-transform ${openMenuId === p._id ? "rotate-180" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                       </button>
+
+                      {/* Dropdown Menu */}
+                      {openMenuId === p._id && (
+                        <>
+                          {/* Backdrop to close menu */}
+                          <div 
+                            className="fixed inset-0 z-10" 
+                            onClick={() => setOpenMenuId(null)}
+                          ></div>
+                          
+                          <div className={`absolute left-0 right-0 mt-2 rounded-lg shadow-xl border overflow-hidden z-20 ${
+                            darkMode ? "bg-gray-700 border-gray-600" : "bg-white border-gray-200"
+                          }`}>
+                            <button
+                              onClick={() => {
+                                openPopup(p, "receive");
+                                setOpenMenuId(null);
+                              }}
+                              className={`w-full px-4 py-3 text-left text-sm font-medium transition flex items-center gap-3 ${
+                                darkMode ? "hover:bg-gray-600 text-emerald-300" : "hover:bg-emerald-50 text-emerald-700"
+                              }`}
+                            >
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                              </svg>
+                              Product Received
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                openPopup(p, "dispatch");
+                                setOpenMenuId(null);
+                              }}
+                              className={`w-full px-4 py-3 text-left text-sm font-medium transition flex items-center gap-3 border-t ${
+                                darkMode ? "hover:bg-gray-600 text-blue-300 border-gray-600" : "hover:bg-blue-50 text-blue-700 border-gray-100"
+                              }`}
+                            >
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                              </svg>
+                              Product Dispatched
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setSelectedProduct(p);
+                                setOperation("view");
+                                setOpenMenuId(null);
+                              }}
+                              className={`w-full px-4 py-3 text-left text-sm font-medium transition flex items-center gap-3 border-t ${
+                                darkMode ? "hover:bg-gray-600 text-indigo-300 border-gray-600" : "hover:bg-indigo-50 text-indigo-700 border-gray-100"
+                              }`}
+                            >
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                              </svg>
+                              View Details
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                setOpenMenuId(null);
+                                confirmAction(
+                                  "Delete Product?",
+                                  `Are you sure you want to delete "${p.name}"?`,
+                                  () => deleteProduct(p._id)
+                                );
+                              }}
+                              className={`w-full px-4 py-3 text-left text-sm font-medium transition flex items-center gap-3 border-t ${
+                                darkMode ? "hover:bg-red-900/30 text-red-300 border-gray-600" : "hover:bg-red-50 text-red-700 border-gray-100"
+                              }`}
+                            >
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              Delete Product
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1747,14 +1840,16 @@ function App() {
             </div>
           )}
 
-          {/* POPUP - Add/Subtract Stock */}
-          {selectedProduct && (
+          {/* POPUP - Product Operations */}
+          {selectedProduct && operation !== "view" && (
             <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
               <div className={`p-8 rounded-2xl shadow-2xl w-[28rem] transition-colors ${
                 darkMode ? "bg-gray-800" : "bg-white"
               }`}>
                 <h3 className={`text-xl font-bold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>
-                  {operation === "add" ? "➕ Add Stock" : "➖ Subtract Stock"}
+                  {operation === "receive" ? "📦 Product Received" : 
+                   operation === "dispatch" ? "🚚 Product Dispatched" :
+                   operation === "add" ? "➕ Add Stock" : "➖ Subtract Stock"}
                 </h3>
                 <p className={`mb-5 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                   {selectedProduct.name} — Current: <span className={`font-bold ${darkMode ? "text-gray-200" : "text-gray-800"}`}>{selectedProduct.quantity}</span>
@@ -1795,7 +1890,8 @@ function App() {
                 <div className="flex gap-3">
                   <button
                     onClick={applyChange}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition"
+                    disabled={!changeValue}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold py-2.5 rounded-lg transition"
                   >
                     OK
                   </button>
@@ -1806,6 +1902,141 @@ function App() {
                     }`}
                   >
                     Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW ALL MODAL - Product Details */}
+          {selectedProduct && operation === "view" && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
+              <div className={`rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden transition-colors ${
+                darkMode ? "bg-gray-800" : "bg-white"
+              }`}>
+                {/* Header */}
+                <div className={`px-8 py-6 border-b ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-800"}`}>
+                        {selectedProduct.name}
+                      </h3>
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mt-2 ${
+                        selectedProduct.quantity <= selectedProduct.minStock
+                          ? darkMode ? "bg-red-900/50 text-red-300" : "bg-red-100 text-red-700"
+                          : darkMode ? "bg-emerald-900/50 text-emerald-300" : "bg-emerald-100 text-emerald-700"
+                      }`}>
+                        {selectedProduct.quantity <= selectedProduct.minStock ? "Low Stock" : "In Stock"}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedProduct(null)}
+                      className={`p-2 rounded-lg transition ${
+                        darkMode ? "hover:bg-gray-700 text-gray-400" : "hover:bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="px-8 py-6 overflow-y-auto max-h-[calc(90vh-180px)]">
+                  <div className="grid grid-cols-2 gap-6 mb-6">
+                    <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}>
+                      <p className={`text-sm font-medium mb-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Current Quantity</p>
+                      <p className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>{selectedProduct.quantity}</p>
+                    </div>
+                    <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}>
+                      <p className={`text-sm font-medium mb-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Price per Unit</p>
+                      <p className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>₹{selectedProduct.price.toLocaleString()}</p>
+                    </div>
+                    <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}>
+                      <p className={`text-sm font-medium mb-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Minimum Stock</p>
+                      <p className={`text-3xl font-bold ${darkMode ? "text-white" : "text-gray-900"}`}>{selectedProduct.minStock}</p>
+                    </div>
+                    <div className={`p-4 rounded-lg ${darkMode ? "bg-indigo-900/30" : "bg-indigo-50"}`}>
+                      <p className={`text-sm font-medium mb-1 ${darkMode ? "text-indigo-400" : "text-indigo-600"}`}>Total Value</p>
+                      <p className={`text-3xl font-bold ${darkMode ? "text-indigo-300" : "text-indigo-700"}`}>₹{(selectedProduct.quantity * selectedProduct.price).toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  {(selectedProduct.category || selectedProduct.subcategory) && (
+                    <div className={`p-4 rounded-lg mb-6 ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}>
+                      <h4 className={`text-sm font-semibold mb-3 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Classification</h4>
+                      <div className="space-y-2">
+                        {selectedProduct.category && (
+                          <div className="flex justify-between">
+                            <span className={darkMode ? "text-gray-400" : "text-gray-500"}>Category</span>
+                            <span className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{selectedProduct.category.name}</span>
+                          </div>
+                        )}
+                        {selectedProduct.subcategory && (
+                          <div className="flex justify-between">
+                            <span className={darkMode ? "text-gray-400" : "text-gray-500"}>Subcategory</span>
+                            <span className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{selectedProduct.subcategory.name}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={`p-4 rounded-lg ${darkMode ? "bg-gray-700" : "bg-gray-50"}`}>
+                    <h4 className={`text-sm font-semibold mb-3 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Stock Status</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className={darkMode ? "text-gray-400" : "text-gray-500"}>Available</span>
+                        <span className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{selectedProduct.quantity} units</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className={darkMode ? "text-gray-400" : "text-gray-500"}>Difference from Min</span>
+                        <span className={`font-medium ${
+                          selectedProduct.quantity - selectedProduct.minStock < 0 
+                            ? "text-red-500" 
+                            : darkMode ? "text-emerald-400" : "text-emerald-600"
+                        }`}>
+                          {selectedProduct.quantity - selectedProduct.minStock > 0 ? "+" : ""}{selectedProduct.quantity - selectedProduct.minStock} units
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Actions */}
+                <div className={`px-8 py-4 border-t flex gap-3 ${darkMode ? "border-gray-700 bg-gray-750" : "border-gray-200 bg-gray-50"}`}>
+                  <button
+                    onClick={() => {
+                      setOperation("receive");
+                      setChangeValue("");
+                      setNote("");
+                    }}
+                    className={`flex-1 py-2.5 rounded-lg font-medium transition ${
+                      darkMode ? "bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-300" : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
+                    }`}
+                  >
+                    📦 Receive
+                  </button>
+                  <button
+                    onClick={() => {
+                      setOperation("dispatch");
+                      setChangeValue("");
+                      setNote("");
+                    }}
+                    className={`flex-1 py-2.5 rounded-lg font-medium transition ${
+                      darkMode ? "bg-blue-900/30 hover:bg-blue-900/50 text-blue-300" : "bg-blue-50 hover:bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    🚚 Dispatch
+                  </button>
+                  <button
+                    onClick={() => editProduct(selectedProduct)}
+                    className={`flex-1 py-2.5 rounded-lg font-medium transition ${
+                      darkMode ? "bg-indigo-900/30 hover:bg-indigo-900/50 text-indigo-300" : "bg-indigo-50 hover:bg-indigo-100 text-indigo-700"
+                    }`}
+                  >
+                    ✏️ Edit
                   </button>
                 </div>
               </div>
