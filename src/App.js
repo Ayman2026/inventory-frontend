@@ -53,6 +53,8 @@ function App() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [productsSubmenuOpen, setProductsSubmenuOpen] = useState(false);
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterSubcategory, setFilterSubcategory] = useState("");
 
   // Debounce search input (200ms delay)
   useEffect(() => {
@@ -1288,14 +1290,79 @@ function App() {
           {/* SHOW ALL PRODUCTS */}
           {page === "products-show" && (
             <div>
-              {/* Download Button */}
-              {products.length > 0 && (
-                <div className="mb-4">
+              {/* Filters and Download Section */}
+              <div className={`mb-6 p-4 rounded-xl border ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <div className="flex flex-col md:flex-row gap-4 items-start md:items-end">
+                  {/* Category Filter */}
+                  <div className="flex-1">
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      Filter by Category
+                    </label>
+                    <select
+                      value={filterCategory}
+                      onChange={(e) => {
+                        setFilterCategory(e.target.value);
+                        setFilterSubcategory(""); // Reset subcategory when category changes
+                        if (e.target.value) {
+                          fetchSubcategories(e.target.value);
+                        }
+                      }}
+                      className={`w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="">All Categories</option>
+                      {categories.map(cat => (
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Subcategory Filter */}
+                  <div className="flex-1">
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>
+                      Filter by Subcategory
+                    </label>
+                    <select
+                      value={filterSubcategory}
+                      onChange={(e) => setFilterSubcategory(e.target.value)}
+                      disabled={!filterCategory}
+                      className={`w-full border rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      } ${!filterCategory ? "opacity-50 cursor-not-allowed" : ""}`}
+                    >
+                      <option value="">All Subcategories</option>
+                      {subcategories.map(sub => (
+                        <option key={sub._id} value={sub._id}>{sub.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Clear Filters Button */}
+                  {(filterCategory || filterSubcategory) && (
+                    <button
+                      onClick={() => {
+                        setFilterCategory("");
+                        setFilterSubcategory("");
+                      }}
+                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                        darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      }`}
+                    >
+                      Clear Filters
+                    </button>
+                  )}
+
+                  {/* Download Button */}
                   <button
                     onClick={async () => {
                       try {
                         const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-                        const res = await fetch(`${baseUrl}/products/download`, {
+                        const params = new URLSearchParams();
+                        if (filterCategory) params.append("category", filterCategory);
+                        if (filterSubcategory) params.append("subcategory", filterSubcategory);
+                        
+                        const res = await fetch(`${baseUrl}/products/download?${params.toString()}`, {
                           headers: {
                             Authorization: `Bearer ${token}`
                           }
@@ -1308,19 +1375,39 @@ function App() {
                           a.download = "products_export.csv";
                           a.click();
                           window.URL.revokeObjectURL(url);
+                          showToast("Products exported successfully!");
                         }
                       } catch (err) {
                         console.error("Download failed:", err);
+                        showToast("Download failed", "error");
                       }
                     }}
-                    className={`px-4 py-2 rounded-lg text-sm transition ${
+                    className={`px-4 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2 ${
                       darkMode ? "bg-green-600 hover:bg-green-700 text-white" : "bg-green-500 hover:bg-green-600 text-white"
                     }`}
                   >
-                    📥 Download Products CSV
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Download CSV
                   </button>
                 </div>
-              )}
+
+                {/* Filter Summary */}
+                {(filterCategory || filterSubcategory) && (
+                  <div className={`mt-4 pt-4 border-t ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
+                    <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      Showing products
+                      {filterCategory && (
+                        <span className="font-semibold"> in category: {categories.find(c => c._id === filterCategory)?.name}</span>
+                      )}
+                      {filterSubcategory && (
+                        <span className="font-semibold"> → subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}</span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
               
               {/* Product Table */}
               {productsLoading ? (
@@ -1342,7 +1429,15 @@ function App() {
                         </tr>
                       </thead>
                       <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
-                        {products.map(p => (
+                        {products
+                          .filter(p => {
+                            // Apply category filter
+                            if (filterCategory && p.category?._id !== filterCategory) return false;
+                            // Apply subcategory filter
+                            if (filterSubcategory && p.subcategory?._id !== filterSubcategory) return false;
+                            return true;
+                          })
+                          .map(p => (
                           <tr key={p._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
                             <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</td>
                             <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
@@ -1385,9 +1480,13 @@ function App() {
                       </tbody>
                     </table>
                   </div>
-                  {products.length === 0 && (
+                  {products.filter(p => {
+                    if (filterCategory && p.category?._id !== filterCategory) return false;
+                    if (filterSubcategory && p.subcategory?._id !== filterSubcategory) return false;
+                    return true;
+                  }).length === 0 && (
                     <div className={`p-12 text-center ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                      No products yet.
+                      No products found matching the selected filters.
                     </div>
                   )}
                 </div>
