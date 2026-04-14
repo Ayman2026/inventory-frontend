@@ -1894,6 +1894,12 @@ function App() {
                         step={field.step}
                         value={form[field.name]}
                         onChange={handleChange}
+                        onKeyDown={(e) => {
+                          // Prevent negative sign, 'e', 'E', '+', '-' for number inputs
+                          if (field.type === "number" && (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E')) {
+                            e.preventDefault();
+                          }
+                        }}
                         placeholder={field.placeholder}
                         className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
                           darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
@@ -1914,6 +1920,12 @@ function App() {
                       min="0"
                       value={form.damagedQuantity}
                       onChange={handleChange}
+                      onKeyDown={(e) => {
+                        // Prevent negative sign, 'e', 'E', '+', '-'
+                        if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                          e.preventDefault();
+                        }
+                      }}
                       placeholder="e.g., 5"
                       className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
                         darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 text-gray-900"
@@ -2497,6 +2509,10 @@ function App() {
                   value={changeValue}
                   onChange={(e) => setChangeValue(e.target.value)}
                   onKeyDown={(e) => {
+                    // Prevent negative sign, 'e', 'E', '+', '-'
+                    if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                      e.preventDefault();
+                    }
                     if (e.key === "Enter" && changeValue) {
                       applyChange();
                     }
@@ -2514,6 +2530,10 @@ function App() {
                     value={damagedValue}
                     onChange={(e) => setDamagedValue(e.target.value)}
                     onKeyDown={(e) => {
+                      // Prevent negative sign, 'e', 'E', '+', '-'
+                      if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                        e.preventDefault();
+                      }
                       if (e.key === "Enter" && changeValue) {
                         applyChange();
                       }
