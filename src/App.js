@@ -52,6 +52,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
+  const [productsSubmenuOpen, setProductsSubmenuOpen] = useState(false);
 
   // Debounce search input (200ms delay)
   useEffect(() => {
@@ -386,7 +387,26 @@ function App() {
 
   const navItems = [
     { id: "dashboard", label: "Dashboard", icon: Home },
-    { id: "products", label: "Products", icon: Package },
+    { 
+      id: "products", 
+      label: "Products", 
+      icon: Package,
+      hasSubmenu: true,
+      submenu: [
+        { id: "products-show", label: "Show All Products", parent: "products" },
+        { 
+          id: "products-manage", 
+          label: "Manage", 
+          parent: "products",
+          hasSubmenu: true,
+          submenu: [
+            { id: "products-received", label: "Product Received", parent: "products-manage" },
+            { id: "products-dispatched", label: "Product Dispatched", parent: "products-manage" },
+            { id: "products-delete", label: "Delete Product", parent: "products-manage" }
+          ]
+        }
+      ]
+    },
     { id: "add", label: "Add Product", icon: Plus },
     { id: "topmovers", label: "Top Movers", icon: TrendingUp },
     { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
@@ -525,7 +545,105 @@ function App() {
         <nav className="flex-1 px-4 py-6 space-y-1.5">
           {navItems.map(item => {
             const Icon = item.icon;
-            const isActive = page === item.id;
+            const isActive = page === item.id || page.startsWith(item.id + "-");
+            
+            // Main navigation item
+            if (item.hasSubmenu) {
+              return (
+                <div key={item.id}>
+                  <button
+                    onClick={() => setProductsSubmenuOpen(!productsSubmenuOpen)}
+                    className={`flex items-center justify-between gap-3.5 w-full px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/30"
+                        : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3.5">
+                      <Icon size={19} strokeWidth={isActive ? 2.5 : 1.5} />
+                      {item.label}
+                    </div>
+                    <svg 
+                      className={`h-4 w-4 transition-transform ${productsSubmenuOpen ? "rotate-180" : ""}`} 
+                      fill="none" 
+                      viewBox="0 0 24 24" 
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  
+                  {/* Submenu */}
+                  {productsSubmenuOpen && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {item.submenu.map(subItem => {
+                        const isSubActive = page === subItem.id;
+                        
+                        // If submenu item has its own submenu (Manage)
+                        if (subItem.hasSubmenu) {
+                          return (
+                            <div key={subItem.id}>
+                              <button
+                                onClick={() => setPage(subItem.id)}
+                                className={`flex items-center justify-between gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                                  isSubActive || page.startsWith(subItem.id + "-")
+                                    ? "bg-indigo-500 text-white"
+                                    : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
+                                }`}
+                              >
+                                <span>{subItem.label}</span>
+                                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              </button>
+                              
+                              {/* Nested submenu for Manage */}
+                              <div className="ml-4 mt-1 space-y-1">
+                                {subItem.submenu.map(nestedItem => {
+                                  const isNestedActive = page === nestedItem.id;
+                                  return (
+                                    <button
+                                      key={nestedItem.id}
+                                      onClick={() => { setPage(nestedItem.id); setMobileMenuOpen(false); }}
+                                      className={`flex items-center gap-2 w-full px-4 py-2 rounded-lg text-xs font-medium transition-all ${
+                                        isNestedActive
+                                          ? "bg-indigo-400 text-white"
+                                          : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
+                                      }`}
+                                    >
+                                      <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                                      {nestedItem.label}
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        // Regular submenu item
+                        return (
+                          <button
+                            key={subItem.id}
+                            onClick={() => { setPage(subItem.id); setMobileMenuOpen(false); }}
+                            className={`flex items-center gap-2 w-full px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                              isSubActive
+                                ? "bg-indigo-500 text-white"
+                                : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
+                            }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-current"></span>
+                            {subItem.label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            
+            // Regular navigation item (no submenu)
             return (
               <button
                 key={item.id}
@@ -574,7 +692,17 @@ function App() {
             <button onClick={() => setMobileMenuOpen(true)} className={`text-2xl md:hidden ${darkMode ? "text-gray-300" : "text-gray-600"}`}>☰</button>
             <div>
               <h1 className={`text-xl font-semibold capitalize ${darkMode ? "text-white" : "text-gray-900"}`}>
-                {page === "add" ? "Add Product" : page === "lowstock" ? "Low Stock" : page === "worth" ? "Total Worth" : page === "topmovers" ? "Top Movers" : page === "suggestions" ? "AI Suggestions" : page}
+                {page === "add" ? "Add Product" : 
+                 page === "lowstock" ? "Low Stock" : 
+                 page === "worth" ? "Total Worth" : 
+                 page === "topmovers" ? "Top Movers" : 
+                 page === "suggestions" ? "AI Suggestions" :
+                 page === "products-show" ? "All Products" :
+                 page === "products-manage" ? "Manage Products" :
+                 page === "products-received" ? "Product Received" :
+                 page === "products-dispatched" ? "Product Dispatched" :
+                 page === "products-delete" ? "Delete Product" :
+                 page}
               </h1>
               <p className="text-gray-400 text-xs mt-0.5">
                 {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
@@ -602,7 +730,7 @@ function App() {
               </div>
               <span className={`text-sm font-medium ${darkMode ? "text-gray-200" : "text-gray-700"}`}>{user?.name || "Admin"}</span>
             </div>
-            {page === "products" && (
+            {(page === "products" || page === "products-show") && (
               <div className="relative">
                 <svg className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${darkMode ? "text-gray-500" : "text-gray-400"}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -1152,6 +1280,202 @@ function App() {
                   {searchQuery ? `No products found for "${searchQuery}"` : "No products yet."}
                 </div>
               )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* SHOW ALL PRODUCTS */}
+          {page === "products-show" && (
+            <div>
+              {/* Download Button */}
+              {products.length > 0 && (
+                <div className="mb-4">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
+                        const res = await fetch(`${baseUrl}/products/download`, {
+                          headers: {
+                            Authorization: `Bearer ${token}`
+                          }
+                        });
+                        if (res.ok) {
+                          const blob = await res.blob();
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download = "products_export.csv";
+                          a.click();
+                          window.URL.revokeObjectURL(url);
+                        }
+                      } catch (err) {
+                        console.error("Download failed:", err);
+                      }
+                    }}
+                    className={`px-4 py-2 rounded-lg text-sm transition ${
+                      darkMode ? "bg-green-600 hover:bg-green-700 text-white" : "bg-green-500 hover:bg-green-600 text-white"
+                    }`}
+                  >
+                    📥 Download Products CSV
+                  </button>
+                </div>
+              )}
+              
+              {/* Product Table */}
+              {productsLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <div className={`rounded-xl border overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
+                        <tr>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Product Name</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Quantity</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Price</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Min Stock</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Total Value</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                        {products.map(p => (
+                          <tr key={p._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
+                            <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</td>
+                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.quantity}</td>
+                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>₹{p.price.toLocaleString()}</td>
+                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.minStock}</td>
+                            <td className={`px-6 py-4 font-semibold ${darkMode ? "text-indigo-400" : "text-indigo-600"}`}>₹{(p.quantity * p.price).toLocaleString()}</td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                                p.quantity <= p.minStock
+                                  ? darkMode ? "bg-red-900/50 text-red-300" : "bg-red-100 text-red-700"
+                                  : darkMode ? "bg-emerald-900/50 text-emerald-300" : "bg-emerald-100 text-emerald-700"
+                              }`}>
+                                {p.quantity <= p.minStock ? "Low Stock" : "In Stock"}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  {products.length === 0 && (
+                    <div className={`p-12 text-center ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      No products yet.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PRODUCT RECEIVED */}
+          {page === "products-received" && (
+            <div>
+              <p className={`mb-6 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                Select a product to record received stock
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {products.map(p => (
+                  <div key={p._id} className={`border rounded-xl p-6 transition hover:shadow-lg cursor-pointer ${
+                    darkMode ? "bg-gray-800 border-gray-700 hover:border-emerald-500" : "bg-white border-gray-200 hover:border-emerald-500"
+                  }`}
+                  onClick={() => openPopup(p, "receive")}
+                  >
+                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
+                    <p className={`text-sm mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Current Stock: <span className="font-bold">{p.quantity}</span></p>
+                    <button className={`w-full py-2 rounded-lg font-medium transition ${
+                      darkMode ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-emerald-500 hover:bg-emerald-600 text-white"
+                    }`}>
+                      📦 Record Received
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              {products.length === 0 && (
+                <div className={`p-12 rounded-xl text-center ${darkMode ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-500"}`}>
+                  No products available.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PRODUCT DISPATCHED */}
+          {page === "products-dispatched" && (
+            <div>
+              <p className={`mb-6 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                Select a product to record dispatched stock
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {products.map(p => (
+                  <div key={p._id} className={`border rounded-xl p-6 transition hover:shadow-lg cursor-pointer ${
+                    darkMode ? "bg-gray-800 border-gray-700 hover:border-blue-500" : "bg-white border-gray-200 hover:border-blue-500"
+                  }`}
+                  onClick={() => openPopup(p, "dispatch")}
+                  >
+                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
+                    <p className={`text-sm mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Current Stock: <span className="font-bold">{p.quantity}</span></p>
+                    <button className={`w-full py-2 rounded-lg font-medium transition ${
+                      darkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
+                    }`}>
+                      🚚 Record Dispatched
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              {products.length === 0 && (
+                <div className={`p-12 rounded-xl text-center ${darkMode ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-500"}`}>
+                  No products available.
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* DELETE PRODUCT */}
+          {page === "products-delete" && (
+            <div>
+              <p className={`mb-6 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                Select a product to delete
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {products.map(p => (
+                  <div key={p._id} className={`border rounded-xl p-6 transition hover:shadow-lg ${
+                    darkMode ? "bg-gray-800 border-gray-700 hover:border-red-500" : "bg-white border-gray-200 hover:border-red-500"
+                  }`}>
+                    <h3 className={`text-lg font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
+                    <div className={`text-sm mb-4 space-y-1 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      <p>Stock: <span className="font-bold">{p.quantity}</span></p>
+                      <p>Price: <span className="font-bold">₹{p.price.toLocaleString()}</span></p>
+                      <p>Value: <span className="font-bold">₹{(p.quantity * p.price).toLocaleString()}</span></p>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        confirmAction(
+                          "Delete Product?",
+                          `Are you sure you want to delete "${p.name}"? This action cannot be undone.`,
+                          () => deleteProduct(p._id)
+                        );
+                      }}
+                      className={`w-full py-2 rounded-lg font-medium transition ${
+                        darkMode ? "bg-red-600 hover:bg-red-700 text-white" : "bg-red-500 hover:bg-red-600 text-white"
+                      }`}
+                    >
+                      🗑️ Delete Product
+                    </button>
+                  </div>
+                ))}
+              </div>
+              
+              {products.length === 0 && (
+                <div className={`p-12 rounded-xl text-center ${darkMode ? "bg-gray-800 text-gray-400" : "bg-gray-100 text-gray-500"}`}>
+                  No products available.
                 </div>
               )}
             </div>
