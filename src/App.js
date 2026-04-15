@@ -566,8 +566,8 @@ function App() {
       ]
     },
     { id: "add", label: "Add Product", icon: Plus },
-    { id: "suppliers", label: "Suppliers" },
-    { id: "dealers", label: "Dealers" },
+    { id: "suppliers", label: "Suppliers", icon: Truck },
+    { id: "dealers", label: "Dealers", icon: Users },
     { id: "topmovers", label: "Top Movers", icon: TrendingUp },
     { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
     { id: "history", label: "History", icon: History }
