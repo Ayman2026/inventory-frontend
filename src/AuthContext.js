@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
     const verifyToken = async () => {
       const savedToken = localStorage.getItem("authToken");
       if (savedToken) {
+        setToken(savedToken); // Set token immediately for faster UI
         try {
           const res = await fetch(`${API_URL}/auth/me`, {
             headers: { Authorization: `Bearer ${savedToken}` }
@@ -21,12 +22,17 @@ export function AuthProvider({ children }) {
           if (res.ok) {
             const userData = await res.json();
             setUser(userData);
-            setToken(savedToken);
           } else {
+            // Token invalid, clear it
             localStorage.removeItem("authToken");
+            setToken(null);
+            setUser(null);
           }
         } catch (err) {
+          console.error("Token verification failed:", err);
           localStorage.removeItem("authToken");
+          setToken(null);
+          setUser(null);
         }
       }
       setLoading(false);
@@ -43,13 +49,13 @@ export function AuthProvider({ children }) {
     if (callbackToken) {
       const handleCallback = async () => {
         await handleTokenLogin(callbackToken);
-        // Redirect to root after successful login
-        window.location.href = "/";
+        // Clean URL and let React Router handle navigation
+        window.history.replaceState({}, document.title, "/");
       };
       handleCallback();
     } else if (isCallbackPath) {
       // If on callback path but no token, redirect to login
-      window.location.href = "/";
+      window.history.replaceState({}, document.title, "/");
     }
   }, []);
 
