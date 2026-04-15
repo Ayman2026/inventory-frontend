@@ -492,7 +492,7 @@ function App() {
     { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
     { id: "history", label: "History", icon: History }
   ];
-  ];
+  
 
   // Loading Spinner Component
   const LoadingSpinner = () => (
@@ -3173,52 +3173,6 @@ function App() {
                       {dealer.email && <p><span className="font-medium">Email:</span> {dealer.email}</p>}
                       {dealer.city && <p><span className="font-medium">City:</span> {dealer.city}</p>}
                       {dealer.gstNumber && <p><span className="font-medium">GST:</span> {dealer.gstNumber}</p>}
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => editDealer(dealer)}
-                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => confirmAction("Delete Dealer?", `Delete "${dealer.name}"?`, () => deleteDealer(dealer._id))}
-                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {dealers.length === 0 && (
-                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
-                  <p className="text-sm">No dealers added yet</p>
-                </div>
-              )}
-            </div>
-          )}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {dealers.length === 0 && (
-                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
-                  <p className="text-sm">No dealers added yet</p>
-                </div>
-              )}
-            </div>
-          )}
-                  <div key={dealer._id} className={`border rounded-lg p-5 transition hover:shadow-md ${
-                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-                  }`}>
-                    <h3 className={`font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{dealer.name}</h3>
-                    <div className={`text-sm space-y-1 mb-3 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                      {dealer.contactPerson && <p>Contact: {dealer.contactPerson}</p>}
-                      {dealer.phone && <p>Phone: {dealer.phone}</p>}
-                      {dealer.email && <p>Email: {dealer.email}</p>}
-                      {dealer.city && <p>City: {dealer.city}</p>}
                     </div>
                     <div className="flex gap-2">
                       <button
