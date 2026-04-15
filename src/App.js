@@ -572,7 +572,6 @@ function App() {
     { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
     { id: "history", label: "History", icon: History }
   ];
-    { id: "history", label: "History", icon: History }
   ];
 
   // Loading Spinner Component
