@@ -2556,6 +2556,224 @@ function App() {
             </div>
           )}
 
+          {/* ADD SUPPLIER PAGE */}
+          {page === "suppliers-add" && (
+            <div>
+              <div className={`border rounded-lg p-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <h3 className={`text-lg font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                  {editSupplierId ? "Edit Supplier" : "Add New Supplier"}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Supplier Name *"
+                    required
+                    value={supplierForm.name}
+                    onChange={(e) => setSupplierForm({...supplierForm, name: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone Number *"
+                    required
+                    value={supplierForm.phone}
+                    onChange={(e) => setSupplierForm({...supplierForm, phone: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Address *"
+                    required
+                    value={supplierForm.address}
+                    onChange={(e) => setSupplierForm({...supplierForm, address: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 md:col-span-2 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={handleSupplierSubmit}
+                    disabled={!supplierForm.name || !supplierForm.phone || !supplierForm.address || saving}
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition"
+                  >
+                    {saving ? "Saving..." : editSupplierId ? "Update Supplier" : "Add Supplier"}
+                  </button>
+                  {editSupplierId && (
+                    <button
+                      onClick={() => {
+                        setSupplierForm({
+                          name: "", contactPerson: "", email: "", phone: "", address: "",
+                          city: "", state: "", pincode: "", gstNumber: "", notes: ""
+                        });
+                        setEditSupplierId(null);
+                      }}
+                      className={`px-6 py-2 text-sm font-medium rounded-lg transition ${
+                        darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW SUPPLIERS PAGE */}
+          {page === "suppliers-view" && (
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {suppliers.map(supplier => (
+                  <div key={supplier._id} className={`border rounded-lg p-5 transition hover:shadow-md ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                  }`}>
+                    <h3 className={`font-semibold text-lg mb-3 ${darkMode ? "text-white" : "text-gray-900"}`}>{supplier.name}</h3>
+                    <div className={`text-sm space-y-2 mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      <p><span className="font-medium">Phone:</span> {supplier.phone}</p>
+                      <p><span className="font-medium">Address:</span> {supplier.address}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          editSupplier(supplier);
+                          setPage("suppliers-add");
+                        }}
+                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => confirmAction("Delete Supplier?", `Delete "${supplier.name}"?`, () => deleteSupplier(supplier._id))}
+                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {suppliers.length === 0 && (
+                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                  <p className="text-sm">No suppliers added yet</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ADD DEALER PAGE */}
+          {page === "dealers-add" && (
+            <div>
+              <div className={`border rounded-lg p-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <h3 className={`text-lg font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                  {editDealerId ? "Edit Dealer" : "Add New Dealer"}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Dealer Name *"
+                    required
+                    value={dealerForm.name}
+                    onChange={(e) => setDealerForm({...dealerForm, name: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone Number *"
+                    required
+                    value={dealerForm.phone}
+                    onChange={(e) => setDealerForm({...dealerForm, phone: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Address *"
+                    required
+                    value={dealerForm.address}
+                    onChange={(e) => setDealerForm({...dealerForm, address: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 md:col-span-2 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={handleDealerSubmit}
+                    disabled={!dealerForm.name || !dealerForm.phone || !dealerForm.address || saving}
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition"
+                  >
+                    {saving ? "Saving..." : editDealerId ? "Update Dealer" : "Add Dealer"}
+                  </button>
+                  {editDealerId && (
+                    <button
+                      onClick={() => {
+                        setDealerForm({
+                          name: "", contactPerson: "", email: "", phone: "", address: "",
+                          city: "", state: "", pincode: "", gstNumber: "", notes: ""
+                        });
+                        setEditDealerId(null);
+                      }}
+                      className={`px-6 py-2 text-sm font-medium rounded-lg transition ${
+                        darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* VIEW DEALERS PAGE */}
+          {page === "dealers-view" && (
+            <div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {dealers.map(dealer => (
+                  <div key={dealer._id} className={`border rounded-lg p-5 transition hover:shadow-md ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                  }`}>
+                    <h3 className={`font-semibold text-lg mb-3 ${darkMode ? "text-white" : "text-gray-900"}`}>{dealer.name}</h3>
+                    <div className={`text-sm space-y-2 mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      <p><span className="font-medium">Phone:</span> {dealer.phone}</p>
+                      <p><span className="font-medium">Address:</span> {dealer.address}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          editDealer(dealer);
+                          setPage("dealers-add");
+                        }}
+                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => confirmAction("Delete Dealer?", `Delete "${dealer.name}"?`, () => deleteDealer(dealer._id))}
+                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {dealers.length === 0 && (
+                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                  <p className="text-sm">No dealers added yet</p>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* TOP MOVERS */}
           {page === "topmovers" && (
             <div>
