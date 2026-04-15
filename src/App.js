@@ -32,9 +32,7 @@ function App() {
     quantity: "",
     price: "",
     minStock: "",
-    damagedQuantity: "",
-    supplier: "",
-    dealer: ""
+    damagedQuantity: ""
   });
 
   const [history, setHistory] = useState([]);
@@ -57,8 +55,6 @@ function App() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [productsSubmenuOpen, setProductsSubmenuOpen] = useState(false);
-  const [suppliersSubmenuOpen, setSuppliersSubmenuOpen] = useState(false);
-  const [dealersSubmenuOpen, setDealersSubmenuOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState("");
   const [filterSubcategory, setFilterSubcategory] = useState("");
   const [showProductsSearch, setShowProductsSearch] = useState("");
@@ -82,20 +78,6 @@ function App() {
   // Top Movers
   const [topMovers, setTopMovers] = useState([]);
   const [topMoversLoading, setTopMoversLoading] = useState(false);
-
-  // Suppliers and Dealers
-  const [suppliers, setSuppliers] = useState([]);
-  const [dealers, setDealers] = useState([]);
-  const [supplierForm, setSupplierForm] = useState({
-    name: "", contactPerson: "", email: "", phone: "", address: "",
-    city: "", state: "", pincode: "", gstNumber: "", notes: ""
-  });
-  const [dealerForm, setDealerForm] = useState({
-    name: "", contactPerson: "", email: "", phone: "", address: "",
-    city: "", state: "", pincode: "", gstNumber: "", notes: ""
-  });
-  const [editSupplierId, setEditSupplierId] = useState(null);
-  const [editDealerId, setEditDealerId] = useState(null);
 
   // Mobile Sidebar Toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -170,12 +152,6 @@ function App() {
       });
   };
 
-  const fetchCategories = () => {
-    api("/categories")
-      .then(data => setCategories(data))
-      .catch(() => {});
-  };
-
   const fetchSubcategories = (categoryId) => {
     if (!categoryId) {
       setSubcategories([]);
@@ -210,82 +186,10 @@ function App() {
     showToast("Subcategory added successfully!");
   };
 
-  // Supplier Functions
-  const fetchSuppliers = () => {
-    api("/suppliers")
-      .then(data => setSuppliers(data))
-      .catch(() => {});
-  };
-
-  const handleSupplierSubmit = async () => {
-    setSaving(true);
-    const url = editSupplierId ? `/suppliers/${editSupplierId}` : "/suppliers";
-    const method = editSupplierId ? "PUT" : "POST";
-    
-    await api(url, { method, body: JSON.stringify(supplierForm) });
-    
-    setSupplierForm({
-      name: "", contactPerson: "", email: "", phone: "", address: "",
-      city: "", state: "", pincode: "", gstNumber: "", notes: ""
-    });
-    setEditSupplierId(null);
-    fetchSuppliers();
-    setSaving(false);
-    showToast(editSupplierId ? "Supplier updated!" : "Supplier added!");
-  };
-
-  const editSupplier = (supplier) => {
-    setSupplierForm(supplier);
-    setEditSupplierId(supplier._id);
-  };
-
-  const deleteSupplier = async (id) => {
-    await api(`/suppliers/${id}`, { method: "DELETE" });
-    fetchSuppliers();
-    showToast("Supplier deleted!");
-  };
-
-  // Dealer Functions
-  const fetchDealers = () => {
-    api("/dealers")
-      .then(data => setDealers(data))
-      .catch(() => {});
-  };
-
-  const handleDealerSubmit = async () => {
-    setSaving(true);
-    const url = editDealerId ? `/dealers/${editDealerId}` : "/dealers";
-    const method = editDealerId ? "PUT" : "POST";
-    
-    await api(url, { method, body: JSON.stringify(dealerForm) });
-    
-    setDealerForm({
-      name: "", contactPerson: "", email: "", phone: "", address: "",
-      city: "", state: "", pincode: "", gstNumber: "", notes: ""
-    });
-    setEditDealerId(null);
-    fetchDealers();
-    setSaving(false);
-    showToast(editDealerId ? "Dealer updated!" : "Dealer added!");
-  };
-
-  const editDealer = (dealer) => {
-    setDealerForm(dealer);
-    setEditDealerId(dealer._id);
-  };
-
-  const deleteDealer = async (id) => {
-    await api(`/dealers/${id}`, { method: "DELETE" });
-    fetchDealers();
-    showToast("Dealer deleted!");
-  };
-
   useEffect(() => {
     fetchProducts();
     fetchHistory();
     fetchCategories();
-    fetchSuppliers();
-    fetchDealers();
   }, []);
 
   useEffect(() => {
@@ -409,9 +313,7 @@ function App() {
         minStock: Number(form.minStock),
         damagedQuantity: Number(form.damagedQuantity) || 0,
         category: selectedCategory || null,
-        subcategory: selectedSubcategory || null,
-        supplier: form.supplier || null,
-        dealer: form.dealer || null
+        subcategory: selectedSubcategory || null
       })
     });
 
@@ -427,7 +329,7 @@ function App() {
     });
     fetchHistory();
 
-    setForm({ name: "", quantity: "", price: "", minStock: "", damagedQuantity: "", supplier: "", dealer: "" });
+    setForm({ name: "", quantity: "", price: "", minStock: "", damagedQuantity: "" });
     setSelectedCategory("");
     setSelectedSubcategory("");
     setEditId(null);
@@ -450,9 +352,7 @@ function App() {
       quantity: p.quantity,
       price: p.price,
       minStock: p.minStock,
-      damagedQuantity: p.damagedQuantity || 0,
-      supplier: p.supplier || "",
-      dealer: p.dealer || ""
+      damagedQuantity: p.damagedQuantity || 0
     });
     setEditId(p._id);
     setSelectedCategory(p.category || "");
@@ -566,8 +466,6 @@ function App() {
       ]
     },
     { id: "add", label: "Add Product", icon: Plus },
-    { id: "suppliers", label: "Suppliers", icon: Truck },
-    { id: "dealers", label: "Dealers", icon: Users },
     { id: "topmovers", label: "Top Movers", icon: TrendingUp },
     { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
     { id: "history", label: "History", icon: History }
@@ -711,14 +609,10 @@ function App() {
             // Main navigation item
             if (item.hasSubmenu) {
               // Determine which submenu state to use based on item.id
-              const submenuOpen = item.id === "products" ? productsSubmenuOpen :
-                                  item.id === "suppliers" ? suppliersSubmenuOpen :
-                                  item.id === "dealers" ? dealersSubmenuOpen : false;
+              const submenuOpen = item.id === "products" ? productsSubmenuOpen : false;
               
               const toggleSubmenu = () => {
                 if (item.id === "products") setProductsSubmenuOpen(!productsSubmenuOpen);
-                else if (item.id === "suppliers") setSuppliersSubmenuOpen(!suppliersSubmenuOpen);
-                else if (item.id === "dealers") setDealersSubmenuOpen(!dealersSubmenuOpen);
               };
               
               return (
@@ -875,12 +769,6 @@ function App() {
                  page === "products-dispatched" ? "Product Dispatched" :
                  page === "products-delete" ? "Delete Product" :
                  page === "damaged" ? "Damaged Products" :
-                 page === "suppliers" ? "Suppliers" :
-                 page === "suppliers-add" ? "Add Supplier" :
-                 page === "suppliers-view" ? "View Suppliers" :
-                 page === "dealers" ? "Dealers" :
-                 page === "dealers-add" ? "Add Dealer" :
-                 page === "dealers-view" ? "View Dealers" :
                  page}
               </h1>
               <p className="text-gray-400 text-xs mt-0.5">
