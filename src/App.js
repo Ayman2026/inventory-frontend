@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp, Lightbulb, Clock, Zap, Calendar } from "lucide-react";
+import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp, Lightbulb, Clock, Zap, Calendar, Truck, Users } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, Area, AreaChart, CartesianGrid } from "recharts";
 import { AuthContext } from "./AuthContext";
 import LoginPage from "./LoginPage";
@@ -566,28 +566,12 @@ function App() {
       ]
     },
     { id: "add", label: "Add Product", icon: Plus },
-    { 
-      id: "suppliers", 
-      label: "Suppliers", 
-      icon: TrendingUp,
-      hasSubmenu: true,
-      submenu: [
-        { id: "suppliers-add", label: "Add Supplier", parent: "suppliers" },
-        { id: "suppliers-view", label: "View Suppliers", parent: "suppliers" }
-      ]
-    },
-    { 
-      id: "dealers", 
-      label: "Dealers", 
-      icon: Zap,
-      hasSubmenu: true,
-      submenu: [
-        { id: "dealers-add", label: "Add Dealer", parent: "dealers" },
-        { id: "dealers-view", label: "View Dealers", parent: "dealers" }
-      ]
-    },
+    { id: "suppliers", label: "Suppliers" },
+    { id: "dealers", label: "Dealers" },
     { id: "topmovers", label: "Top Movers", icon: TrendingUp },
     { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
+    { id: "history", label: "History", icon: History }
+  ];
     { id: "history", label: "History", icon: History }
   ];
 
@@ -843,7 +827,7 @@ function App() {
                     : "text-gray-400 hover:bg-gray-800/60 hover:text-gray-200"
                 }`}
               >
-                <Icon size={19} strokeWidth={isActive ? 2.5 : 1.5} />
+                {item.icon && <Icon size={19} strokeWidth={isActive ? 2.5 : 1.5} />}
                 {item.label}
               </button>
             );
@@ -2956,11 +2940,11 @@ function App() {
             </div>
           )}
 
-          {/* SUPPLIERS ADD PAGE */}
-          {page === "suppliers-add" && (
+          {/* SUPPLIERS PAGE */}
+          {page === "suppliers" && (
             <div>
               {/* Add/Edit Form */}
-              <div className={`border rounded-lg p-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+              <div className={`border rounded-lg p-6 mb-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
                 <h3 className={`text-lg font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>
                   {editSupplierId ? "Edit Supplier" : "Add New Supplier"}
                 </h3>
@@ -3088,12 +3072,7 @@ function App() {
                   )}
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* SUPPLIERS VIEW PAGE */}
-          {page === "suppliers-view" && (
-            <div>
               {/* Suppliers List */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {suppliers.map(supplier => (
@@ -3111,10 +3090,7 @@ function App() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => {
-                          editSupplier(supplier);
-                          setPage("suppliers-add");
-                        }}
+                        onClick={() => editSupplier(supplier)}
                         className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
                       >
                         Edit
@@ -3137,11 +3113,11 @@ function App() {
             </div>
           )}
 
-          {/* DEALERS ADD PAGE */}
-          {page === "dealers-add" && (
+          {/* DEALERS PAGE */}
+          {page === "dealers" && (
             <div>
               {/* Add/Edit Form */}
-              <div className={`border rounded-lg p-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+              <div className={`border rounded-lg p-6 mb-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
                 <h3 className={`text-lg font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>
                   {editDealerId ? "Edit Dealer" : "Add New Dealer"}
                 </h3>
@@ -3269,12 +3245,7 @@ function App() {
                   )}
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* DEALERS VIEW PAGE */}
-          {page === "dealers-view" && (
-            <div>
               {/* Dealers List */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {dealers.map(dealer => (
@@ -3292,10 +3263,7 @@ function App() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => {
-                          editDealer(dealer);
-                          setPage("dealers-add");
-                        }}
+                        onClick={() => editDealer(dealer)}
                         className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
                       >
                         Edit
