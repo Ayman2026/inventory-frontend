@@ -55,6 +55,8 @@ function App() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [productsSubmenuOpen, setProductsSubmenuOpen] = useState(false);
+  const [suppliersSubmenuOpen, setSuppliersSubmenuOpen] = useState(false);
+  const [dealersSubmenuOpen, setDealersSubmenuOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState("");
   const [filterSubcategory, setFilterSubcategory] = useState("");
   const [showProductsSearch, setShowProductsSearch] = useState("");
@@ -78,6 +80,20 @@ function App() {
   // Top Movers
   const [topMovers, setTopMovers] = useState([]);
   const [topMoversLoading, setTopMoversLoading] = useState(false);
+
+  // Suppliers and Dealers
+  const [suppliers, setSuppliers] = useState([]);
+  const [dealers, setDealers] = useState([]);
+  const [supplierForm, setSupplierForm] = useState({
+    name: "", contactPerson: "", email: "", phone: "", address: "",
+    city: "", state: "", pincode: "", gstNumber: "", notes: ""
+  });
+  const [dealerForm, setDealerForm] = useState({
+    name: "", contactPerson: "", email: "", phone: "", address: "",
+    city: "", state: "", pincode: "", gstNumber: "", notes: ""
+  });
+  const [editSupplierId, setEditSupplierId] = useState(null);
+  const [editDealerId, setEditDealerId] = useState(null);
 
   // Mobile Sidebar Toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -192,10 +208,82 @@ function App() {
     showToast("Subcategory added successfully!");
   };
 
+  // Supplier Functions
+  const fetchSuppliers = () => {
+    api("/suppliers")
+      .then(data => setSuppliers(data))
+      .catch(() => {});
+  };
+
+  const handleSupplierSubmit = async () => {
+    setSaving(true);
+    const url = editSupplierId ? `/suppliers/${editSupplierId}` : "/suppliers";
+    const method = editSupplierId ? "PUT" : "POST";
+    
+    await api(url, { method, body: JSON.stringify(supplierForm) });
+    
+    setSupplierForm({
+      name: "", contactPerson: "", email: "", phone: "", address: "",
+      city: "", state: "", pincode: "", gstNumber: "", notes: ""
+    });
+    setEditSupplierId(null);
+    fetchSuppliers();
+    setSaving(false);
+    showToast(editSupplierId ? "Supplier updated!" : "Supplier added!");
+  };
+
+  const editSupplier = (supplier) => {
+    setSupplierForm(supplier);
+    setEditSupplierId(supplier._id);
+  };
+
+  const deleteSupplier = async (id) => {
+    await api(`/suppliers/${id}`, { method: "DELETE" });
+    fetchSuppliers();
+    showToast("Supplier deleted!");
+  };
+
+  // Dealer Functions
+  const fetchDealers = () => {
+    api("/dealers")
+      .then(data => setDealers(data))
+      .catch(() => {});
+  };
+
+  const handleDealerSubmit = async () => {
+    setSaving(true);
+    const url = editDealerId ? `/dealers/${editDealerId}` : "/dealers";
+    const method = editDealerId ? "PUT" : "POST";
+    
+    await api(url, { method, body: JSON.stringify(dealerForm) });
+    
+    setDealerForm({
+      name: "", contactPerson: "", email: "", phone: "", address: "",
+      city: "", state: "", pincode: "", gstNumber: "", notes: ""
+    });
+    setEditDealerId(null);
+    fetchDealers();
+    setSaving(false);
+    showToast(editDealerId ? "Dealer updated!" : "Dealer added!");
+  };
+
+  const editDealer = (dealer) => {
+    setDealerForm(dealer);
+    setEditDealerId(dealer._id);
+  };
+
+  const deleteDealer = async (id) => {
+    await api(`/dealers/${id}`, { method: "DELETE" });
+    fetchDealers();
+    showToast("Dealer deleted!");
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchHistory();
     fetchCategories();
+    fetchSuppliers();
+    fetchDealers();
   }, []);
 
   useEffect(() => {
@@ -466,6 +554,26 @@ function App() {
       ]
     },
     { id: "add", label: "Add Product", icon: Plus },
+    { 
+      id: "suppliers", 
+      label: "Suppliers", 
+      icon: TrendingUp,
+      hasSubmenu: true,
+      submenu: [
+        { id: "suppliers-add", label: "Add Supplier", parent: "suppliers" },
+        { id: "suppliers-view", label: "View Suppliers", parent: "suppliers" }
+      ]
+    },
+    { 
+      id: "dealers", 
+      label: "Dealers", 
+      icon: Zap,
+      hasSubmenu: true,
+      submenu: [
+        { id: "dealers-add", label: "Add Dealer", parent: "dealers" },
+        { id: "dealers-view", label: "View Dealers", parent: "dealers" }
+      ]
+    },
     { id: "topmovers", label: "Top Movers", icon: TrendingUp },
     { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
     { id: "history", label: "History", icon: History }
@@ -607,10 +715,21 @@ function App() {
             
             // Main navigation item
             if (item.hasSubmenu) {
+              // Determine which submenu state to use based on item.id
+              const submenuOpen = item.id === "products" ? productsSubmenuOpen :
+                                  item.id === "suppliers" ? suppliersSubmenuOpen :
+                                  item.id === "dealers" ? dealersSubmenuOpen : false;
+              
+              const toggleSubmenu = () => {
+                if (item.id === "products") setProductsSubmenuOpen(!productsSubmenuOpen);
+                else if (item.id === "suppliers") setSuppliersSubmenuOpen(!suppliersSubmenuOpen);
+                else if (item.id === "dealers") setDealersSubmenuOpen(!dealersSubmenuOpen);
+              };
+              
               return (
                 <div key={item.id}>
                   <button
-                    onClick={() => setProductsSubmenuOpen(!productsSubmenuOpen)}
+                    onClick={toggleSubmenu}
                     className={`flex items-center justify-between gap-3.5 w-full px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                       isActive
                         ? "bg-indigo-600 text-white shadow-lg shadow-indigo-900/30"
@@ -622,7 +741,7 @@ function App() {
                       {item.label}
                     </div>
                     <svg 
-                      className={`h-4 w-4 transition-transform ${productsSubmenuOpen ? "rotate-180" : ""}`} 
+                      className={`h-4 w-4 transition-transform ${submenuOpen ? "rotate-180" : ""}`} 
                       fill="none" 
                       viewBox="0 0 24 24" 
                       stroke="currentColor"
@@ -632,7 +751,7 @@ function App() {
                   </button>
                   
                   {/* Submenu */}
-                  {productsSubmenuOpen && (
+                  {submenuOpen && (
                     <div className="ml-4 mt-1 space-y-1">
                       {item.submenu.map(subItem => {
                         const isSubActive = page === subItem.id;
@@ -761,6 +880,12 @@ function App() {
                  page === "products-dispatched" ? "Product Dispatched" :
                  page === "products-delete" ? "Delete Product" :
                  page === "damaged" ? "Damaged Products" :
+                 page === "suppliers" ? "Suppliers" :
+                 page === "suppliers-add" ? "Add Supplier" :
+                 page === "suppliers-view" ? "View Suppliers" :
+                 page === "dealers" ? "Dealers" :
+                 page === "dealers-add" ? "Add Dealer" :
+                 page === "dealers-view" ? "View Dealers" :
                  page}
               </h1>
               <p className="text-gray-400 text-xs mt-0.5">
@@ -2752,6 +2877,414 @@ function App() {
                   </>
                 );
               })()}
+            </div>
+          )}
+
+          {/* SUPPLIERS ADD PAGE */}
+          {page === "suppliers-add" && (
+            <div>
+              {/* Add/Edit Form */}
+              <div className={`border rounded-lg p-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <h3 className={`text-lg font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                  {editSupplierId ? "Edit Supplier" : "Add New Supplier"}
+                </h3>
+                <p className={`text-sm mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  Fields marked with * are required
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Supplier Name *"
+                    required
+                    value={supplierForm.name}
+                    onChange={(e) => setSupplierForm({...supplierForm, name: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone Number *"
+                    required
+                    value={supplierForm.phone}
+                    onChange={(e) => setSupplierForm({...supplierForm, phone: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Address *"
+                    required
+                    value={supplierForm.address}
+                    onChange={(e) => setSupplierForm({...supplierForm, address: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 md:col-span-2 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Contact Person"
+                    value={supplierForm.contactPerson}
+                    onChange={(e) => setSupplierForm({...supplierForm, contactPerson: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={supplierForm.email}
+                    onChange={(e) => setSupplierForm({...supplierForm, email: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="City"
+                    value={supplierForm.city}
+                    onChange={(e) => setSupplierForm({...supplierForm, city: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="State"
+                    value={supplierForm.state}
+                    onChange={(e) => setSupplierForm({...supplierForm, state: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Pincode"
+                    value={supplierForm.pincode}
+                    onChange={(e) => setSupplierForm({...supplierForm, pincode: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="GST Number"
+                    value={supplierForm.gstNumber}
+                    onChange={(e) => setSupplierForm({...supplierForm, gstNumber: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <textarea
+                    placeholder="Notes"
+                    value={supplierForm.notes}
+                    onChange={(e) => setSupplierForm({...supplierForm, notes: e.target.value})}
+                    rows="3"
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 md:col-span-2 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={handleSupplierSubmit}
+                    disabled={!supplierForm.name || !supplierForm.phone || !supplierForm.address || saving}
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition"
+                  >
+                    {saving ? "Saving..." : editSupplierId ? "Update Supplier" : "Add Supplier"}
+                  </button>
+                  {editSupplierId && (
+                    <button
+                      onClick={() => {
+                        setSupplierForm({
+                          name: "", contactPerson: "", email: "", phone: "", address: "",
+                          city: "", state: "", pincode: "", gstNumber: "", notes: ""
+                        });
+                        setEditSupplierId(null);
+                      }}
+                      className={`px-6 py-2 text-sm font-medium rounded-lg transition ${
+                        darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SUPPLIERS VIEW PAGE */}
+          {page === "suppliers-view" && (
+            <div>
+              {/* Suppliers List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {suppliers.map(supplier => (
+                  <div key={supplier._id} className={`border rounded-lg p-5 transition hover:shadow-md ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                  }`}>
+                    <h3 className={`font-semibold text-lg mb-3 ${darkMode ? "text-white" : "text-gray-900"}`}>{supplier.name}</h3>
+                    <div className={`text-sm space-y-2 mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      <p><span className="font-medium">Phone:</span> {supplier.phone}</p>
+                      <p><span className="font-medium">Address:</span> {supplier.address}</p>
+                      {supplier.contactPerson && <p><span className="font-medium">Contact:</span> {supplier.contactPerson}</p>}
+                      {supplier.email && <p><span className="font-medium">Email:</span> {supplier.email}</p>}
+                      {supplier.city && <p><span className="font-medium">City:</span> {supplier.city}</p>}
+                      {supplier.gstNumber && <p><span className="font-medium">GST:</span> {supplier.gstNumber}</p>}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          editSupplier(supplier);
+                          setPage("suppliers-add");
+                        }}
+                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => confirmAction("Delete Supplier?", `Delete "${supplier.name}"?`, () => deleteSupplier(supplier._id))}
+                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {suppliers.length === 0 && (
+                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                  <p className="text-sm">No suppliers added yet</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* DEALERS ADD PAGE */}
+          {page === "dealers-add" && (
+            <div>
+              {/* Add/Edit Form */}
+              <div className={`border rounded-lg p-6 ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <h3 className={`text-lg font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                  {editDealerId ? "Edit Dealer" : "Add New Dealer"}
+                </h3>
+                <p className={`text-sm mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  Fields marked with * are required
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input
+                    type="text"
+                    placeholder="Dealer Name *"
+                    required
+                    value={dealerForm.name}
+                    onChange={(e) => setDealerForm({...dealerForm, name: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Phone Number *"
+                    required
+                    value={dealerForm.phone}
+                    onChange={(e) => setDealerForm({...dealerForm, phone: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Address *"
+                    required
+                    value={dealerForm.address}
+                    onChange={(e) => setDealerForm({...dealerForm, address: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 md:col-span-2 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Contact Person"
+                    value={dealerForm.contactPerson}
+                    onChange={(e) => setDealerForm({...dealerForm, contactPerson: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="email"
+                    placeholder="Email"
+                    value={dealerForm.email}
+                    onChange={(e) => setDealerForm({...dealerForm, email: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="City"
+                    value={dealerForm.city}
+                    onChange={(e) => setDealerForm({...dealerForm, city: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="State"
+                    value={dealerForm.state}
+                    onChange={(e) => setDealerForm({...dealerForm, state: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Pincode"
+                    value={dealerForm.pincode}
+                    onChange={(e) => setDealerForm({...dealerForm, pincode: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <input
+                    type="text"
+                    placeholder="GST Number"
+                    value={dealerForm.gstNumber}
+                    onChange={(e) => setDealerForm({...dealerForm, gstNumber: e.target.value})}
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                  <textarea
+                    placeholder="Notes"
+                    value={dealerForm.notes}
+                    onChange={(e) => setDealerForm({...dealerForm, notes: e.target.value})}
+                    rows="3"
+                    className={`border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 md:col-span-2 ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "bg-white border-gray-300 placeholder-gray-400"
+                    }`}
+                  />
+                </div>
+                <div className="flex gap-3 mt-4">
+                  <button
+                    onClick={handleDealerSubmit}
+                    disabled={!dealerForm.name || !dealerForm.phone || !dealerForm.address || saving}
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition"
+                  >
+                    {saving ? "Saving..." : editDealerId ? "Update Dealer" : "Add Dealer"}
+                  </button>
+                  {editDealerId && (
+                    <button
+                      onClick={() => {
+                        setDealerForm({
+                          name: "", contactPerson: "", email: "", phone: "", address: "",
+                          city: "", state: "", pincode: "", gstNumber: "", notes: ""
+                        });
+                        setEditDealerId(null);
+                      }}
+                      className={`px-6 py-2 text-sm font-medium rounded-lg transition ${
+                        darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                      }`}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* DEALERS VIEW PAGE */}
+          {page === "dealers-view" && (
+            <div>
+              {/* Dealers List */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {dealers.map(dealer => (
+                  <div key={dealer._id} className={`border rounded-lg p-5 transition hover:shadow-md ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                  }`}>
+                    <h3 className={`font-semibold text-lg mb-3 ${darkMode ? "text-white" : "text-gray-900"}`}>{dealer.name}</h3>
+                    <div className={`text-sm space-y-2 mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      <p><span className="font-medium">Phone:</span> {dealer.phone}</p>
+                      <p><span className="font-medium">Address:</span> {dealer.address}</p>
+                      {dealer.contactPerson && <p><span className="font-medium">Contact:</span> {dealer.contactPerson}</p>}
+                      {dealer.email && <p><span className="font-medium">Email:</span> {dealer.email}</p>}
+                      {dealer.city && <p><span className="font-medium">City:</span> {dealer.city}</p>}
+                      {dealer.gstNumber && <p><span className="font-medium">GST:</span> {dealer.gstNumber}</p>}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => {
+                          editDealer(dealer);
+                          setPage("dealers-add");
+                        }}
+                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => confirmAction("Delete Dealer?", `Delete "${dealer.name}"?`, () => deleteDealer(dealer._id))}
+                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {dealers.length === 0 && (
+                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                  <p className="text-sm">No dealers added yet</p>
+                </div>
+              )}
+            </div>
+          )}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {dealers.length === 0 && (
+                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                  <p className="text-sm">No dealers added yet</p>
+                </div>
+              )}
+            </div>
+          )}
+                  <div key={dealer._id} className={`border rounded-lg p-5 transition hover:shadow-md ${
+                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                  }`}>
+                    <h3 className={`font-semibold mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>{dealer.name}</h3>
+                    <div className={`text-sm space-y-1 mb-3 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                      {dealer.contactPerson && <p>Contact: {dealer.contactPerson}</p>}
+                      {dealer.phone && <p>Phone: {dealer.phone}</p>}
+                      {dealer.email && <p>Email: {dealer.email}</p>}
+                      {dealer.city && <p>City: {dealer.city}</p>}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => editDealer(dealer)}
+                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => confirmAction("Delete Dealer?", `Delete "${dealer.name}"?`, () => deleteDealer(dealer._id))}
+                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {dealers.length === 0 && (
+                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                  <p className="text-sm">No dealers added yet</p>
+                </div>
+              )}
             </div>
           )}
 
