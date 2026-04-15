@@ -192,20 +192,25 @@ function App() {
   };
 
   const handleSupplierSubmit = async () => {
-    setSaving(true);
-    const url = editSupplierId ? `/suppliers/${editSupplierId}` : "/suppliers";
-    const method = editSupplierId ? "PUT" : "POST";
-    
-    await api(url, { method, body: JSON.stringify(supplierForm) });
-    
-    setSupplierForm({
-      name: "", contactPerson: "", email: "", phone: "", address: "",
-      city: "", state: "", pincode: "", gstNumber: "", notes: ""
-    });
-    setEditSupplierId(null);
-    fetchSuppliers();
-    setSaving(false);
-    showToast(editSupplierId ? "Supplier updated!" : "Supplier added!");
+    try {
+      setSaving(true);
+      const url = editSupplierId ? `/suppliers/${editSupplierId}` : "/suppliers";
+      const method = editSupplierId ? "PUT" : "POST";
+      
+      await api(url, { method, body: JSON.stringify(supplierForm) });
+      
+      setSupplierForm({
+        name: "", contactPerson: "", email: "", phone: "", address: "",
+        city: "", state: "", pincode: "", gstNumber: "", notes: ""
+      });
+      setEditSupplierId(null);
+      fetchSuppliers();
+      showToast(editSupplierId ? "Supplier updated!" : "Supplier added!");
+    } catch (error) {
+      showToast("Failed to save supplier. Please try again.", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const editSupplier = (supplier) => {
@@ -227,20 +232,25 @@ function App() {
   };
 
   const handleDealerSubmit = async () => {
-    setSaving(true);
-    const url = editDealerId ? `/dealers/${editDealerId}` : "/dealers";
-    const method = editDealerId ? "PUT" : "POST";
-    
-    await api(url, { method, body: JSON.stringify(dealerForm) });
-    
-    setDealerForm({
-      name: "", contactPerson: "", email: "", phone: "", address: "",
-      city: "", state: "", pincode: "", gstNumber: "", notes: ""
-    });
-    setEditDealerId(null);
-    fetchDealers();
-    setSaving(false);
-    showToast(editDealerId ? "Dealer updated!" : "Dealer added!");
+    try {
+      setSaving(true);
+      const url = editDealerId ? `/dealers/${editDealerId}` : "/dealers";
+      const method = editDealerId ? "PUT" : "POST";
+      
+      await api(url, { method, body: JSON.stringify(dealerForm) });
+      
+      setDealerForm({
+        name: "", contactPerson: "", email: "", phone: "", address: "",
+        city: "", state: "", pincode: "", gstNumber: "", notes: ""
+      });
+      setEditDealerId(null);
+      fetchDealers();
+      showToast(editDealerId ? "Dealer updated!" : "Dealer added!");
+    } catch (error) {
+      showToast("Failed to save dealer. Please try again.", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const editDealer = (dealer) => {
