@@ -55,6 +55,8 @@ function App() {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [openMenuId, setOpenMenuId] = useState(null);
   const [productsSubmenuOpen, setProductsSubmenuOpen] = useState(false);
+  const [suppliersSubmenuOpen, setSuppliersSubmenuOpen] = useState(false);
+  const [dealersSubmenuOpen, setDealersSubmenuOpen] = useState(false);
   const [filterCategory, setFilterCategory] = useState("");
   const [filterSubcategory, setFilterSubcategory] = useState("");
   const [showProductsSearch, setShowProductsSearch] = useState("");
@@ -466,6 +468,26 @@ function App() {
       ]
     },
     { id: "add", label: "Add Product", icon: Plus },
+    { 
+      id: "suppliers", 
+      label: "Suppliers", 
+      icon: Truck,
+      hasSubmenu: true,
+      submenu: [
+        { id: "suppliers-add", label: "Add Supplier", parent: "suppliers" },
+        { id: "suppliers-view", label: "View Suppliers", parent: "suppliers" }
+      ]
+    },
+    { 
+      id: "dealers", 
+      label: "Dealers", 
+      icon: Users,
+      hasSubmenu: true,
+      submenu: [
+        { id: "dealers-add", label: "Add Dealer", parent: "dealers" },
+        { id: "dealers-view", label: "View Dealers", parent: "dealers" }
+      ]
+    },
     { id: "topmovers", label: "Top Movers", icon: TrendingUp },
     { id: "suggestions", label: "AI Suggestions", icon: Lightbulb },
     { id: "history", label: "History", icon: History }
@@ -609,10 +631,14 @@ function App() {
             // Main navigation item
             if (item.hasSubmenu) {
               // Determine which submenu state to use based on item.id
-              const submenuOpen = item.id === "products" ? productsSubmenuOpen : false;
+              const submenuOpen = item.id === "products" ? productsSubmenuOpen :
+                                  item.id === "suppliers" ? suppliersSubmenuOpen :
+                                  item.id === "dealers" ? dealersSubmenuOpen : false;
               
               const toggleSubmenu = () => {
                 if (item.id === "products") setProductsSubmenuOpen(!productsSubmenuOpen);
+                else if (item.id === "suppliers") setSuppliersSubmenuOpen(!suppliersSubmenuOpen);
+                else if (item.id === "dealers") setDealersSubmenuOpen(!dealersSubmenuOpen);
               };
               
               return (
