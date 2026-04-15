@@ -81,6 +81,20 @@ function App() {
   const [topMovers, setTopMovers] = useState([]);
   const [topMoversLoading, setTopMoversLoading] = useState(false);
 
+  // Suppliers and Dealers
+  const [suppliers, setSuppliers] = useState([]);
+  const [dealers, setDealers] = useState([]);
+  const [supplierForm, setSupplierForm] = useState({
+    name: "", contactPerson: "", email: "", phone: "", address: "",
+    city: "", state: "", pincode: "", gstNumber: "", notes: ""
+  });
+  const [dealerForm, setDealerForm] = useState({
+    name: "", contactPerson: "", email: "", phone: "", address: "",
+    city: "", state: "", pincode: "", gstNumber: "", notes: ""
+  });
+  const [editSupplierId, setEditSupplierId] = useState(null);
+  const [editDealerId, setEditDealerId] = useState(null);
+
   // Mobile Sidebar Toggle
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [dashboardPeriod, setDashboardPeriod] = useState("30"); // days
@@ -130,28 +144,10 @@ function App() {
       .catch(() => setHistoryLoading(false));
   };
 
-  const fetchTopMovers = () => {
-    setTopMoversLoading(true);
-    api("/history/top-movers?limit=10")
-      .then(data => {
-        setTopMovers(data);
-        setTopMoversLoading(false);
-      })
-      .catch(() => setTopMoversLoading(false));
-  };
-
-  const fetchProducts = () => {
-    setProductsLoading(true);
-    api("/products")
-      .then(data => {
-        setProducts(data);
-        setProductsLoading(false);
-        setLoading(false);
-      })
-      .catch(() => {
-        setProductsLoading(false);
-        setLoading(false);
-      });
+  const fetchCategories = () => {
+    api("/categories")
+      .then(data => setCategories(data))
+      .catch(() => {});
   };
 
   const fetchSubcategories = (categoryId) => {
@@ -188,10 +184,106 @@ function App() {
     showToast("Subcategory added successfully!");
   };
 
+  // Supplier Functions
+  const fetchSuppliers = () => {
+    api("/suppliers")
+      .then(data => setSuppliers(data))
+      .catch(() => {});
+  };
+
+  const handleSupplierSubmit = async () => {
+    setSaving(true);
+    const url = editSupplierId ? `/suppliers/${editSupplierId}` : "/suppliers";
+    const method = editSupplierId ? "PUT" : "POST";
+    
+    await api(url, { method, body: JSON.stringify(supplierForm) });
+    
+    setSupplierForm({
+      name: "", contactPerson: "", email: "", phone: "", address: "",
+      city: "", state: "", pincode: "", gstNumber: "", notes: ""
+    });
+    setEditSupplierId(null);
+    fetchSuppliers();
+    setSaving(false);
+    showToast(editSupplierId ? "Supplier updated!" : "Supplier added!");
+  };
+
+  const editSupplier = (supplier) => {
+    setSupplierForm(supplier);
+    setEditSupplierId(supplier._id);
+  };
+
+  const deleteSupplier = async (id) => {
+    await api(`/suppliers/${id}`, { method: "DELETE" });
+    fetchSuppliers();
+    showToast("Supplier deleted!");
+  };
+
+  // Dealer Functions
+  const fetchDealers = () => {
+    api("/dealers")
+      .then(data => setDealers(data))
+      .catch(() => {});
+  };
+
+  const handleDealerSubmit = async () => {
+    setSaving(true);
+    const url = editDealerId ? `/dealers/${editDealerId}` : "/dealers";
+    const method = editDealerId ? "PUT" : "POST";
+    
+    await api(url, { method, body: JSON.stringify(dealerForm) });
+    
+    setDealerForm({
+      name: "", contactPerson: "", email: "", phone: "", address: "",
+      city: "", state: "", pincode: "", gstNumber: "", notes: ""
+    });
+    setEditDealerId(null);
+    fetchDealers();
+    setSaving(false);
+    showToast(editDealerId ? "Dealer updated!" : "Dealer added!");
+  };
+
+  const editDealer = (dealer) => {
+    setDealerForm(dealer);
+    setEditDealerId(dealer._id);
+  };
+
+  const deleteDealer = async (id) => {
+    await api(`/dealers/${id}`, { method: "DELETE" });
+    fetchDealers();
+    showToast("Dealer deleted!");
+  };
+
+  const fetchProducts = () => {
+    setProductsLoading(true);
+    api("/products")
+      .then(data => {
+        setProducts(data);
+        setProductsLoading(false);
+        setLoading(false);
+      })
+      .catch(() => {
+        setProductsLoading(false);
+        setLoading(false);
+      });
+  };
+
+  const fetchTopMovers = () => {
+    setTopMoversLoading(true);
+    api("/history/top-movers?limit=10")
+      .then(data => {
+        setTopMovers(data);
+        setTopMoversLoading(false);
+      })
+      .catch(() => setTopMoversLoading(false));
+  };
+
   useEffect(() => {
     fetchProducts();
     fetchHistory();
     fetchCategories();
+    fetchSuppliers();
+    fetchDealers();
   }, []);
 
   useEffect(() => {
@@ -795,6 +887,10 @@ function App() {
                  page === "products-dispatched" ? "Product Dispatched" :
                  page === "products-delete" ? "Delete Product" :
                  page === "damaged" ? "Damaged Products" :
+                 page === "suppliers-add" ? "Add Supplier" :
+                 page === "suppliers-view" ? "View Suppliers" :
+                 page === "dealers-add" ? "Add Dealer" :
+                 page === "dealers-view" ? "View Dealers" :
                  page}
               </h1>
               <p className="text-gray-400 text-xs mt-0.5">
