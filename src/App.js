@@ -69,6 +69,8 @@ function App() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
   const [note, setNote] = useState("");
+  const [selectedSupplier, setSelectedSupplier] = useState("");
+  const [selectedDealer, setSelectedDealer] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
 
   // History Filters
@@ -500,6 +502,16 @@ function App() {
         body.damagedQuantity = Number(damagedValue);
       }
       
+      // Add supplier for receive operation
+      if (operation === "receive" && selectedSupplier) {
+        body.supplier = selectedSupplier;
+      }
+      
+      // Add dealer for dispatch operation
+      if (operation === "dispatch" && selectedDealer) {
+        body.dealer = selectedDealer;
+      }
+      
       await api(`/products/${selectedProduct._id}/${endpoint}`, {
         method: "POST",
         body: JSON.stringify(body)
@@ -507,6 +519,8 @@ function App() {
 
       setSelectedProduct(null);
       setDamagedValue("");
+      setSelectedSupplier("");
+      setSelectedDealer("");
       fetchProducts();
       fetchHistory();
       showToast(`Product ${operation === "receive" ? "received" : "dispatched"} successfully!`);
@@ -3113,6 +3127,7 @@ function App() {
                             <tr className={`border-b transition-colors ${darkMode ? "bg-gray-700 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
                               <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Product</th>
                               <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Stock Change</th>
+                              <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Supplier/Dealer</th>
                               <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Time</th>
                               <th className={`text-left px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Note</th>
                               <th className={`text-right px-6 py-3 text-sm font-semibold ${darkMode ? "text-gray-300" : "text-gray-600"}`}></th>
@@ -3138,6 +3153,9 @@ function App() {
                                       {h.change}
                                     </span>
                                   )}
+                                </td>
+                                <td className={`px-6 py-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                                  {h.supplier ? `🚚 ${h.supplier.name}` : h.dealer ? `👥 ${h.dealer.name}` : "—"}
                                 </td>
                                 <td className={`px-6 py-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                                   📅 {h.time}
@@ -3639,6 +3657,36 @@ function App() {
                       darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "border-gray-300 text-gray-900"
                     }`}
                   />
+                )}
+
+                {operation === "receive" && (
+                  <select
+                    value={selectedSupplier}
+                    onChange={(e) => setSelectedSupplier(e.target.value)}
+                    className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-blue-500 text-sm transition-colors ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "border-gray-300 text-gray-900"
+                    }`}
+                  >
+                    <option value="">Select Supplier (Optional)</option>
+                    {suppliers.map(supplier => (
+                      <option key={supplier._id} value={supplier._id}>{supplier.name}</option>
+                    ))}
+                  </select>
+                )}
+
+                {operation === "dispatch" && (
+                  <select
+                    value={selectedDealer}
+                    onChange={(e) => setSelectedDealer(e.target.value)}
+                    className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-blue-500 text-sm transition-colors ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "border-gray-300 text-gray-900"
+                    }`}
+                  >
+                    <option value="">Select Dealer (Optional)</option>
+                    {dealers.map(dealer => (
+                      <option key={dealer._id} value={dealer._id}>{dealer.name}</option>
+                    ))}
+                  </select>
                 )}
 
                 <input
