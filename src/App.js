@@ -32,7 +32,9 @@ function App() {
     quantity: "",
     price: "",
     minStock: "",
-    damagedQuantity: ""
+    damagedQuantity: "",
+    supplier: "",
+    dealer: ""
   });
 
   const [history, setHistory] = useState([]);
@@ -407,7 +409,9 @@ function App() {
         minStock: Number(form.minStock),
         damagedQuantity: Number(form.damagedQuantity) || 0,
         category: selectedCategory || null,
-        subcategory: selectedSubcategory || null
+        subcategory: selectedSubcategory || null,
+        supplier: form.supplier || null,
+        dealer: form.dealer || null
       })
     });
 
@@ -423,7 +427,7 @@ function App() {
     });
     fetchHistory();
 
-    setForm({ name: "", quantity: "", price: "", minStock: "", damagedQuantity: "" });
+    setForm({ name: "", quantity: "", price: "", minStock: "", damagedQuantity: "", supplier: "", dealer: "" });
     setSelectedCategory("");
     setSelectedSubcategory("");
     setEditId(null);
@@ -441,7 +445,15 @@ function App() {
 
   // EDIT
   const editProduct = (p) => {
-    setForm(p);
+    setForm({
+      name: p.name,
+      quantity: p.quantity,
+      price: p.price,
+      minStock: p.minStock,
+      damagedQuantity: p.damagedQuantity || 0,
+      supplier: p.supplier || "",
+      dealer: p.dealer || ""
+    });
     setEditId(p._id);
     setSelectedCategory(p.category || "");
     setSelectedSubcategory(p.subcategory || "");
@@ -1636,6 +1648,8 @@ function App() {
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Stock Status</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Category</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Subcategory</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Supplier</th>
+                          <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Dealer</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Quantity</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Price</th>
                           <th className={`px-6 py-4 text-left text-xs font-semibold uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Min Stock</th>
@@ -1703,6 +1717,28 @@ function App() {
                                   darkMode ? "bg-purple-900/30 text-purple-300" : "bg-purple-100 text-purple-700"
                                 }`}>
                                   {p.subcategory.name}
+                                </span>
+                              ) : (
+                                <span className={darkMode ? "text-gray-500" : "text-gray-400"}>—</span>
+                              )}
+                            </td>
+                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              {p.supplier ? (
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  darkMode ? "bg-green-900/30 text-green-300" : "bg-green-100 text-green-700"
+                                }`}>
+                                  {p.supplier.name}
+                                </span>
+                              ) : (
+                                <span className={darkMode ? "text-gray-500" : "text-gray-400"}>—</span>
+                              )}
+                            </td>
+                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              {p.dealer ? (
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                  darkMode ? "bg-orange-900/30 text-orange-300" : "bg-orange-100 text-orange-700"
+                                }`}>
+                                  {p.dealer.name}
                                 </span>
                               ) : (
                                 <span className={darkMode ? "text-gray-500" : "text-gray-400"}>—</span>
@@ -2467,6 +2503,46 @@ function App() {
                       </div>
                     </div>
                   )}
+
+                  {/* Supplier Dropdown */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <label className={`md:w-36 text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Supplier
+                      <span className={`ml-1 text-xs ${darkMode ? "text-gray-500" : "text-gray-400"}`}>(Optional)</span>
+                    </label>
+                    <select
+                      value={form.supplier}
+                      onChange={(e) => setForm({...form, supplier: e.target.value})}
+                      className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="">Select Supplier</option>
+                      {suppliers.map(supplier => (
+                        <option key={supplier._id} value={supplier._id}>{supplier.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Dealer Dropdown */}
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <label className={`md:w-36 text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      Dealer
+                      <span className={`ml-1 text-xs ${darkMode ? "text-gray-500" : "text-gray-400"}`}>(Optional)</span>
+                    </label>
+                    <select
+                      value={form.dealer}
+                      onChange={(e) => setForm({...form, dealer: e.target.value})}
+                      className={`flex-1 border rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300 text-gray-900"
+                      }`}
+                    >
+                      <option value="">Select Dealer</option>
+                      {dealers.map(dealer => (
+                        <option key={dealer._id} value={dealer._id}>{dealer.name}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 <button
