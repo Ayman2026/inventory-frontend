@@ -23,22 +23,47 @@ export function AuthProvider({ children }) {
             const userData = await res.json();
             setUser(userData);
           } else {
-            // Token invalid, clear it
+            // Token invalid or expired, clear it
+            console.log("Token verification failed, clearing auth");
             localStorage.removeItem("authToken");
             setToken(null);
             setUser(null);
           }
         } catch (err) {
-          console.error("Token verification failed:", err);
-          localStorage.removeItem("authToken");
-          setToken(null);
-          setUser(null);
+          // Network error - keep token and retry later
+          console.error("Token verification network error:", err);
+          // Don't clear token on network errors, user might be offline temporarily
+          // Just set loading to false and let them try again
         }
       }
       setLoading(false);
     };
     verifyToken();
   }, []);
+
+  // Periodic token validation (every 5 minutes)
+  useEffect(() => {
+    if (!token) return;
+
+    const validateToken = async () => {
+      try {
+        const res = await fetch(`${API_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          console.log("Token expired, logging out");
+          logout();
+        }
+      } catch (err) {
+        // Ignore network errors during periodic checks
+        console.error("Periodic token check failed:", err);
+      }
+    };
+
+    // Check token validity every 5 minutes
+    const interval = setInterval(validateToken, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [token]);
 
   // Handle OAuth callback from URL
   useEffect(() => {
