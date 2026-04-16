@@ -1858,41 +1858,46 @@ function App() {
                 )}
               </div>
               
-              {/* Products Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products
-                  .filter(p => {
-                    const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
-                    const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
-                    const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
-                    return matchesSearch && matchesCategory && matchesSubcategory;
-                  })
-                  .map(p => (
-                  <div 
-                    key={p._id} 
-                    onClick={() => openPopup(p, "receive")}
-                    className={`border rounded-lg p-5 cursor-pointer transition hover:shadow-md ${
-                      darkMode ? "bg-gray-800 border-gray-700 hover:border-gray-600" : "bg-white border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${
-                        darkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-700"
-                      }`}>
-                        {p.quantity}
-                      </span>
-                    </div>
-                    {p.category && (
-                      <p className={`text-xs mb-3 ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
-                        {p.category.name || p.category}
-                      </p>
-                    )}
-                    <button className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition">
-                      Receive Stock
-                    </button>
-                  </div>
-                ))}
+              {/* Products Table */}
+              <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Product Name</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Current Stock</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Category</th>
+                        <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                      {products
+                        .filter(p => {
+                          const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                          const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                          const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                          return matchesSearch && matchesCategory && matchesSubcategory;
+                        })
+                        .map(p => (
+                        <tr key={p._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
+                          <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.quantity}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                            {p.category ? (p.category.name || p.category) : "—"}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => openPopup(p, "receive")}
+                              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded transition"
+                            >
+                              Receive Stock
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               
               {/* Empty State */}
@@ -1972,41 +1977,46 @@ function App() {
                 )}
               </div>
               
-              {/* Products Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products
-                  .filter(p => {
-                    const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
-                    const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
-                    const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
-                    return matchesSearch && matchesCategory && matchesSubcategory;
-                  })
-                  .map(p => (
-                  <div 
-                    key={p._id} 
-                    onClick={() => openPopup(p, "dispatch")}
-                    className={`border rounded-lg p-5 cursor-pointer transition hover:shadow-md ${
-                      darkMode ? "bg-gray-800 border-gray-700 hover:border-gray-600" : "bg-white border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${
-                        darkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-700"
-                      }`}>
-                        {p.quantity}
-                      </span>
-                    </div>
-                    {p.category && (
-                      <p className={`text-xs mb-3 ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
-                        {p.category.name || p.category}
-                      </p>
-                    )}
-                    <button className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition">
-                      Dispatch Stock
-                    </button>
-                  </div>
-                ))}
+              {/* Products Table */}
+              <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Product Name</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Current Stock</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Category</th>
+                        <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                      {products
+                        .filter(p => {
+                          const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                          const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                          const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                          return matchesSearch && matchesCategory && matchesSubcategory;
+                        })
+                        .map(p => (
+                        <tr key={p._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
+                          <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.quantity}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                            {p.category ? (p.category.name || p.category) : "—"}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => openPopup(p, "dispatch")}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition"
+                            >
+                              Dispatch Stock
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               
               {/* Empty State */}
@@ -2086,53 +2096,56 @@ function App() {
                 )}
               </div>
               
-              {/* Products Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {products
-                  .filter(p => {
-                    const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
-                    const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
-                    const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
-                    return matchesSearch && matchesCategory && matchesSubcategory;
-                  })
-                  .map(p => (
-                  <div 
-                    key={p._id} 
-                    className={`border rounded-lg p-5 transition hover:shadow-md ${
-                      darkMode ? "bg-gray-800 border-gray-700 hover:border-gray-600" : "bg-white border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className={`font-semibold ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</h3>
-                      <span className={`text-xs font-medium px-2 py-1 rounded ${
-                        darkMode ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-700"
-                      }`}>
-                        {p.quantity}
-                      </span>
-                    </div>
-                    <div className={`text-sm space-y-1 mb-3 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                      <p>Price: ₹{p.price.toLocaleString()}</p>
-                      <p>Value: ₹{(p.quantity * p.price).toLocaleString()}</p>
-                      {p.category && (
-                        <p className={`text-xs ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
-                          {p.category.name || p.category}
-                        </p>
-                      )}
-                    </div>
-                    <button 
-                      onClick={() => {
-                        confirmAction(
-                          "Delete Product?",
-                          `Are you sure you want to delete "${p.name}"? This action cannot be undone.`,
-                          () => deleteProduct(p._id)
-                        );
-                      }}
-                      className="w-full py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
+              {/* Products Table */}
+              <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Product Name</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Stock</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Price</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Value</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Category</th>
+                        <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                      {products
+                        .filter(p => {
+                          const matchesSearch = p.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+                          const matchesCategory = !filterCategory || p.category?._id === filterCategory || p.category === filterCategory;
+                          const matchesSubcategory = !filterSubcategory || p.subcategory?._id === filterSubcategory || p.subcategory === filterSubcategory;
+                          return matchesSearch && matchesCategory && matchesSubcategory;
+                        })
+                        .map(p => (
+                        <tr key={p._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
+                          <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{p.name}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.quantity}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>₹{p.price.toLocaleString()}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>₹{(p.quantity * p.price).toLocaleString()}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                            {p.category ? (p.category.name || p.category) : "—"}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <button
+                              onClick={() => {
+                                confirmAction(
+                                  "Delete Product?",
+                                  `Are you sure you want to delete "${p.name}"? This action cannot be undone.`,
+                                  () => deleteProduct(p._id)
+                                );
+                              }}
+                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition"
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               
               {/* Empty State */}
