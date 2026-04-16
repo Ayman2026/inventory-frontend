@@ -481,16 +481,30 @@ function App() {
 
     const method = editId ? "PUT" : "POST";
 
+    // Calculate good quantity: total quantity minus damaged quantity
+    const totalQuantity = Number(form.quantity);
+    const damagedQty = Number(form.damagedQuantity) || 0;
+    const goodQuantity = totalQuantity - damagedQty;
+
+    // Validation: damaged quantity cannot be more than total quantity
+    if (damagedQty > totalQuantity) {
+      showToast("Damaged quantity cannot be more than total quantity!", "error");
+      setSaving(false);
+      return;
+    }
+
     await api(url, {
       method,
       body: JSON.stringify({
         name: form.name,
-        quantity: Number(form.quantity),
+        quantity: goodQuantity, // Store only good quantity
         price: Number(form.price),
         minStock: Number(form.minStock),
-        damagedQuantity: Number(form.damagedQuantity) || 0,
+        damagedQuantity: damagedQty,
         category: selectedCategory || null,
-        subcategory: selectedSubcategory || null
+        subcategory: selectedSubcategory || null,
+        supplier: form.supplier || null,
+        dealer: form.dealer || null
       })
     });
 
@@ -499,14 +513,14 @@ function App() {
       method: "POST",
       body: JSON.stringify({
         name: form.name,
-        change: editId ? "Updated Product" : `Added ${form.quantity}`,
+        change: editId ? "Updated Product" : `Added ${goodQuantity} good, ${damagedQty} damaged`,
         time: new Date().toLocaleString(),
         note: editId ? "Edited via dashboard" : "Created via dashboard"
       })
     });
     fetchHistory();
 
-    setForm({ name: "", quantity: "", price: "", minStock: "", damagedQuantity: "" });
+    setForm({ name: "", quantity: "", price: "", minStock: "", damagedQuantity: "", supplier: "", dealer: "" });
     setSelectedCategory("");
     setSelectedSubcategory("");
     setEditId(null);
@@ -2544,7 +2558,7 @@ function App() {
                 <div className="space-y-6">
                   {[
                     { name: "name", label: "Product Name", type: "text", placeholder: "e.g., Wheat, Rice, Sugar" },
-                    { name: "quantity", label: "Quantity", type: "number", placeholder: "e.g., 50" },
+                    { name: "quantity", label: "Total Quantity", type: "number", placeholder: "e.g., 100" },
                     { name: "price", label: "Price (₹)", type: "number", step: "0.01", placeholder: "e.g., 120.50" },
                     { name: "minStock", label: "Min Stock Level", type: "number", placeholder: "e.g., 10" }
                   ].map(field => (
