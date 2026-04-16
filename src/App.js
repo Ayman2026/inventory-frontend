@@ -2651,35 +2651,47 @@ function App() {
           {/* VIEW SUPPLIERS PAGE */}
           {page === "suppliers-view" && (
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {suppliers.map(supplier => (
-                  <div key={supplier._id} className={`border rounded-lg p-5 transition hover:shadow-md ${
-                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-                  }`}>
-                    <h3 className={`font-semibold text-lg mb-3 ${darkMode ? "text-white" : "text-gray-900"}`}>{supplier.name}</h3>
-                    <div className={`text-sm space-y-2 mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                      <p><span className="font-medium">Phone:</span> {supplier.phone}</p>
-                      <p><span className="font-medium">Address:</span> {supplier.address}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          editSupplier(supplier);
-                          setPage("suppliers-add");
-                        }}
-                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => confirmAction("Delete Supplier?", `Delete "${supplier.name}"?`, () => deleteSupplier(supplier._id))}
-                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Name</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Phone</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Address</th>
+                        <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                      {suppliers.map(supplier => (
+                        <tr key={supplier._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
+                          <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{supplier.name}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{supplier.phone}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{supplier.address}</td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  editSupplier(supplier);
+                                  setPage("suppliers-add");
+                                }}
+                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => confirmAction("Delete Supplier?", `Delete "${supplier.name}"?`, () => deleteSupplier(supplier._id))}
+                                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               {suppliers.length === 0 && (
                 <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
@@ -2760,35 +2772,47 @@ function App() {
           {/* VIEW DEALERS PAGE */}
           {page === "dealers-view" && (
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {dealers.map(dealer => (
-                  <div key={dealer._id} className={`border rounded-lg p-5 transition hover:shadow-md ${
-                    darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-                  }`}>
-                    <h3 className={`font-semibold text-lg mb-3 ${darkMode ? "text-white" : "text-gray-900"}`}>{dealer.name}</h3>
-                    <div className={`text-sm space-y-2 mb-4 ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                      <p><span className="font-medium">Phone:</span> {dealer.phone}</p>
-                      <p><span className="font-medium">Address:</span> {dealer.address}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          editDealer(dealer);
-                          setPage("dealers-add");
-                        }}
-                        className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => confirmAction("Delete Dealer?", `Delete "${dealer.name}"?`, () => deleteDealer(dealer._id))}
-                        className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+              <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Name</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Phone</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Address</th>
+                        <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                      {dealers.map(dealer => (
+                        <tr key={dealer._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
+                          <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{dealer.name}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{dealer.phone}</td>
+                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{dealer.address}</td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => {
+                                  editDealer(dealer);
+                                  setPage("dealers-add");
+                                }}
+                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => confirmAction("Delete Dealer?", `Delete "${dealer.name}"?`, () => deleteDealer(dealer._id))}
+                                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
               {dealers.length === 0 && (
                 <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
@@ -3569,6 +3593,14 @@ function App() {
                   </div>
                 )}
 
+                {operation === "receive" && (
+                  <div className={`mb-3 p-2 rounded-lg ${darkMode ? "bg-blue-900/20 border border-blue-700" : "bg-blue-50 border border-blue-200"}`}>
+                    <p className={`text-xs ${darkMode ? "text-blue-400" : "text-blue-700"}`}>
+                      💡 Enter TOTAL quantity received, then damaged quantity. Good will be calculated automatically.
+                    </p>
+                  </div>
+                )}
+
                 <input
                   type="number"
                   min="0"
@@ -3608,55 +3640,69 @@ function App() {
                       setChangeValue('');
                     }
                   }}
-                  placeholder={operation === "receive" ? "Enter good quantity received" : "Enter quantity to dispatch"}
+                  placeholder={operation === "receive" ? "Enter TOTAL quantity received (e.g., 50)" : "Enter quantity to dispatch"}
                   className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-blue-500 text-lg transition-colors ${
                     darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "border-gray-300 text-gray-900"
                   }`}
                 />
 
                 {operation === "receive" && (
-                  <input
-                    type="number"
-                    min="0"
-                    value={damagedValue}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      if (value === '' || (parseFloat(value) >= 0 && !value.includes('-'))) {
-                        setDamagedValue(value);
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      // Prevent negative sign, 'e', 'E', '+', '-'
-                      if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                  <>
+                    <input
+                      type="number"
+                      min="0"
+                      max={changeValue ? Number(changeValue) : undefined}
+                      value={damagedValue}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const totalQty = Number(changeValue) || 0;
+                        if (value === '' || (parseFloat(value) >= 0 && parseFloat(value) <= totalQty && !value.includes('-'))) {
+                          setDamagedValue(value);
+                        }
+                      }}
+                      onKeyDown={(e) => {
+                        // Prevent negative sign, 'e', 'E', '+', '-'
+                        if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+                          e.preventDefault();
+                        }
+                        if (e.key === "Enter" && changeValue) {
+                          applyChange();
+                        }
+                      }}
+                      onPaste={(e) => {
+                        // Prevent pasting negative numbers
+                        const pastedText = e.clipboardData.getData('text');
+                        if (pastedText.includes('-') || parseFloat(pastedText) < 0) {
+                          e.preventDefault();
+                        }
+                      }}
+                      onWheel={(e) => {
+                        e.target.blur();
                         e.preventDefault();
-                      }
-                      if (e.key === "Enter" && changeValue) {
-                        applyChange();
-                      }
-                    }}
-                    onPaste={(e) => {
-                      // Prevent pasting negative numbers
-                      const pastedText = e.clipboardData.getData('text');
-                      if (pastedText.includes('-') || parseFloat(pastedText) < 0) {
-                        e.preventDefault();
-                      }
-                    }}
-                    onWheel={(e) => {
-                      e.target.blur();
-                      e.preventDefault();
-                    }}
-                    onInput={(e) => {
-                      // Additional check to remove negative values if they somehow get through
-                      if (e.target.value && parseFloat(e.target.value) < 0) {
-                        e.target.value = '';
-                        setDamagedValue('');
-                      }
-                    }}
-                    placeholder="Enter damaged quantity (optional)"
-                    className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-orange-500 text-lg transition-colors ${
-                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "border-gray-300 text-gray-900"
-                    }`}
-                  />
+                      }}
+                      onInput={(e) => {
+                        // Additional check to remove negative values if they somehow get through
+                        if (e.target.value && parseFloat(e.target.value) < 0) {
+                          e.target.value = '';
+                          setDamagedValue('');
+                        }
+                      }}
+                      placeholder="Enter damaged quantity (e.g., 20)"
+                      className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-orange-500 text-lg transition-colors ${
+                        darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "border-gray-300 text-gray-900"
+                      }`}
+                    />
+                    
+                    {changeValue && (
+                      <div className={`mb-3 p-2 rounded-lg ${darkMode ? "bg-green-900/20 border border-green-700" : "bg-green-50 border border-green-200"}`}>
+                        <p className={`text-sm ${darkMode ? "text-green-400" : "text-green-700"}`}>
+                          📊 Total: <span className="font-bold">{changeValue}</span> units
+                          <span className="ml-2">→ ✅ Good: <span className="font-bold">{(Number(changeValue) || 0) - (Number(damagedValue) || 0)}</span></span>
+                          {damagedValue && <span className="ml-2">❌ Damaged: <span className="font-bold">{damagedValue}</span></span>}
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
 
                 {operation === "receive" && (
