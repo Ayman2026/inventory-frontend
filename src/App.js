@@ -73,6 +73,20 @@ function App() {
   const [selectedDealer, setSelectedDealer] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: "name", direction: "asc" });
 
+  // Advanced Search States
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState({
+    minPrice: "",
+    maxPrice: "",
+    minStock: "",
+    maxStock: "",
+    stockStatus: "all", // all, instock, lowstock, outofstock
+    hasDamaged: "all" // all, yes, no
+  });
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
   // History Filters
   const [historyFilterName, setHistoryFilterName] = useState("");
   const [historyFilterDateFrom, setHistoryFilterDateFrom] = useState("");
@@ -362,6 +376,63 @@ function App() {
       }
       return sortConfig.direction === "asc" ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
+  };
+
+  // ADVANCED SEARCH & FILTER
+  const applyAdvancedFilters = (productList) => {
+    return productList.filter(p => {
+      // Price range filter
+      if (advancedFilters.minPrice && p.price < Number(advancedFilters.minPrice)) return false;
+      if (advancedFilters.maxPrice && p.price > Number(advancedFilters.maxPrice)) return false;
+      
+      // Stock range filter
+      if (advancedFilters.minStock && p.quantity < Number(advancedFilters.minStock)) return false;
+      if (advancedFilters.maxStock && p.quantity > Number(advancedFilters.maxStock)) return false;
+      
+      // Stock status filter
+      if (advancedFilters.stockStatus === "instock" && p.quantity <= p.minStock) return false;
+      if (advancedFilters.stockStatus === "lowstock" && p.quantity > p.minStock) return false;
+      if (advancedFilters.stockStatus === "outofstock" && p.quantity > 0) return false;
+      
+      // Damaged products filter
+      if (advancedFilters.hasDamaged === "yes" && (!p.damagedQuantity || p.damagedQuantity === 0)) return false;
+      if (advancedFilters.hasDamaged === "no" && p.damagedQuantity > 0) return false;
+      
+      return true;
+    });
+  };
+
+  // Global search with suggestions
+  useEffect(() => {
+    if (globalSearch.length > 0) {
+      const suggestions = products
+        .filter(p => p.name.toLowerCase().includes(globalSearch.toLowerCase()))
+        .slice(0, 5)
+        .map(p => ({
+          id: p._id,
+          name: p.name,
+          category: p.category?.name || "No category",
+          stock: p.quantity
+        }));
+      setSearchSuggestions(suggestions);
+    } else {
+      setSearchSuggestions([]);
+    }
+  }, [globalSearch, products]);
+
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    setFilterCategory("");
+    setFilterSubcategory("");
+    setAdvancedFilters({
+      minPrice: "",
+      maxPrice: "",
+      minStock: "",
+      maxStock: "",
+      stockStatus: "all",
+      hasDamaged: "all"
+    });
+    setGlobalSearch("");
   };
 
   // FORM
@@ -922,7 +993,53 @@ function App() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Global Search */}
+            <div className="relative hidden md:block">
+              <input
+                type="text"
+                value={globalSearch}
+                onChange={(e) => {
+                  setGlobalSearch(e.target.value);
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                placeholder="Search products..."
+                className={`w-64 border rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-indigo-500 transition ${
+                  darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-400" : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                }`}
+              />
+              {/* Search Suggestions Dropdown */}
+              {showSuggestions && searchSuggestions.length > 0 && (
+                <div className={`absolute top-full mt-2 w-full rounded-lg shadow-lg border z-50 ${
+                  darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+                }`}>
+                  {searchSuggestions.map(suggestion => (
+                    <div
+                      key={suggestion.id}
+                      onClick={() => {
+                        setPage("products");
+                        setSearchQuery(suggestion.name);
+                        setGlobalSearch("");
+                        setShowSuggestions(false);
+                      }}
+                      className={`px-4 py-3 cursor-pointer transition border-b last:border-b-0 ${
+                        darkMode ? "hover:bg-gray-700 border-gray-700" : "hover:bg-gray-50 border-gray-100"
+                      }`}
+                    >
+                      <div className={`font-medium text-sm ${darkMode ? "text-white" : "text-gray-900"}`}>
+                        {suggestion.name}
+                      </div>
+                      <div className={`text-xs mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                        {suggestion.category} • Stock: {suggestion.stock}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -1576,14 +1693,15 @@ function App() {
                     </div>
 
                     {/* Clear Filters Button */}
-                    {(filterCategory || filterSubcategory || showProductsSearch) && (
+                    {(filterCategory || filterSubcategory || showProductsSearch || showAdvancedSearch) && (
                       <button
                         onClick={() => {
                           setFilterCategory("");
                           setFilterSubcategory("");
                           setShowProductsSearch("");
+                          clearAllFilters();
                         }}
-                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition ${
+                        className={`px-4 py-2.5 rounded-lg text-sm font-medium transition whitespace-nowrap ${
                           darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                         }`}
                       >
@@ -1591,46 +1709,124 @@ function App() {
                       </button>
                     )}
 
-                    {/* Download Button */}
+                    {/* Advanced Filters Toggle */}
                     <button
-                      onClick={async () => {
-                        try {
-                          const baseUrl = process.env.REACT_APP_API_URL || "http://localhost:5000";
-                          const params = new URLSearchParams();
-                          if (filterCategory) params.append("category", filterCategory);
-                          if (filterSubcategory) params.append("subcategory", filterSubcategory);
-                          if (showProductsSearch) params.append("search", showProductsSearch);
-                          
-                          const res = await fetch(`${baseUrl}/products/download?${params.toString()}`, {
-                            headers: {
-                              Authorization: `Bearer ${token}`
-                            }
-                          });
-                          if (res.ok) {
-                            const blob = await res.blob();
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement("a");
-                            a.href = url;
-                            a.download = "products_export.csv";
-                            a.click();
-                            window.URL.revokeObjectURL(url);
-                            showToast("Products exported successfully!");
-                          }
-                        } catch (err) {
-                          console.error("Download failed:", err);
-                          showToast("Download failed", "error");
-                        }
-                      }}
-                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition flex items-center gap-2 whitespace-nowrap ${
-                        darkMode ? "bg-green-600 hover:bg-green-700 text-white" : "bg-green-500 hover:bg-green-600 text-white"
+                      onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
+                      className={`px-4 py-2.5 rounded-lg text-sm font-medium transition whitespace-nowrap flex items-center gap-2 ${
+                        showAdvancedSearch
+                          ? "bg-indigo-600 text-white"
+                          : darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                       }`}
                     >
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                       </svg>
-                      Download CSV
+                      Advanced
                     </button>
                   </div>
+
+                  {/* Advanced Filters Panel */}
+                  {showAdvancedSearch && (
+                    <div className={`mt-4 p-4 rounded-lg border ${darkMode ? "bg-gray-700/50 border-gray-600" : "bg-gray-50 border-gray-200"}`}>
+                      <h3 className={`text-sm font-semibold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>Advanced Filters</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Price Range */}
+                        <div>
+                          <label className={`block text-xs font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                            Price Range (₹)
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="Min"
+                              value={advancedFilters.minPrice}
+                              onChange={(e) => setAdvancedFilters({...advancedFilters, minPrice: e.target.value})}
+                              className={`w-full border rounded px-3 py-2 text-sm ${
+                                darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300"
+                              }`}
+                            />
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="Max"
+                              value={advancedFilters.maxPrice}
+                              onChange={(e) => setAdvancedFilters({...advancedFilters, maxPrice: e.target.value})}
+                              className={`w-full border rounded px-3 py-2 text-sm ${
+                                darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300"
+                              }`}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Stock Range */}
+                        <div>
+                          <label className={`block text-xs font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                            Stock Range
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="Min"
+                              value={advancedFilters.minStock}
+                              onChange={(e) => setAdvancedFilters({...advancedFilters, minStock: e.target.value})}
+                              className={`w-full border rounded px-3 py-2 text-sm ${
+                                darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300"
+                              }`}
+                            />
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="Max"
+                              value={advancedFilters.maxStock}
+                              onChange={(e) => setAdvancedFilters({...advancedFilters, maxStock: e.target.value})}
+                              className={`w-full border rounded px-3 py-2 text-sm ${
+                                darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300"
+                              }`}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Stock Status */}
+                        <div>
+                          <label className={`block text-xs font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                            Stock Status
+                          </label>
+                          <select
+                            value={advancedFilters.stockStatus}
+                            onChange={(e) => setAdvancedFilters({...advancedFilters, stockStatus: e.target.value})}
+                            className={`w-full border rounded px-3 py-2 text-sm ${
+                              darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300"
+                            }`}
+                          >
+                            <option value="all">All</option>
+                            <option value="instock">In Stock</option>
+                            <option value="lowstock">Low Stock</option>
+                            <option value="outofstock">Out of Stock</option>
+                          </select>
+                        </div>
+
+                        {/* Has Damaged */}
+                        <div>
+                          <label className={`block text-xs font-medium mb-2 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                            Damaged Products
+                          </label>
+                          <select
+                            value={advancedFilters.hasDamaged}
+                            onChange={(e) => setAdvancedFilters({...advancedFilters, hasDamaged: e.target.value})}
+                            className={`w-full border rounded px-3 py-2 text-sm ${
+                              darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "bg-white border-gray-300"
+                            }`}
+                          >
+                            <option value="all">All</option>
+                            <option value="yes">Has Damaged</option>
+                            <option value="no">No Damaged</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Filter Summary */}
@@ -1675,7 +1871,7 @@ function App() {
                         </tr>
                       </thead>
                       <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
-                        {products
+                        {applyAdvancedFilters(products)
                           .filter(p => {
                             // Apply search filter
                             if (showProductsSearch && !p.name.toLowerCase().includes(showProductsSearch.toLowerCase())) return false;
