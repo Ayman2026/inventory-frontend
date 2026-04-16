@@ -321,6 +321,24 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
+  // Global search with suggestions
+  useEffect(() => {
+    if (globalSearch.length > 0) {
+      const suggestions = products
+        .filter(p => p.name.toLowerCase().includes(globalSearch.toLowerCase()))
+        .slice(0, 5)
+        .map(p => ({
+          id: p._id,
+          name: p.name,
+          category: p.category?.name || "No category",
+          stock: p.quantity
+        }));
+      setSearchSuggestions(suggestions);
+    } else {
+      setSearchSuggestions([]);
+    }
+  }, [globalSearch, products]);
+
   // Show loading while checking auth
   if (authLoading) {
     return (
@@ -401,24 +419,6 @@ function App() {
       return true;
     });
   };
-
-  // Global search with suggestions
-  useEffect(() => {
-    if (globalSearch.length > 0) {
-      const suggestions = products
-        .filter(p => p.name.toLowerCase().includes(globalSearch.toLowerCase()))
-        .slice(0, 5)
-        .map(p => ({
-          id: p._id,
-          name: p.name,
-          category: p.category?.name || "No category",
-          stock: p.quantity
-        }));
-      setSearchSuggestions(suggestions);
-    } else {
-      setSearchSuggestions([]);
-    }
-  }, [globalSearch, products]);
 
   const clearAllFilters = () => {
     setSearchQuery("");
