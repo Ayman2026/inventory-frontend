@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
-import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp, Lightbulb, Clock, Zap, Calendar, Truck, Users } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, Legend, Area, AreaChart, CartesianGrid } from "recharts";
+import { Home, Package, Plus, History, LogOut, Moon, Sun, TrendingUp, Lightbulb, Clock, Truck, Users } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from "recharts";
 import { AuthContext } from "./AuthContext";
 import LoginPage from "./LoginPage";
 import AISuggestionsPage from "./AISuggestionsPage";
@@ -290,18 +290,21 @@ function App() {
       .catch(() => setTopMoversLoading(false));
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchProducts();
     fetchHistory();
     fetchCategories();
     fetchSuppliers();
     fetchDealers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (page === "topmovers") {
       fetchTopMovers();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
   // Show loading while checking auth
@@ -322,9 +325,6 @@ function App() {
   const totalProducts = products.length;
   const totalStock = products.reduce((sum, p) => sum + p.quantity, 0);
   const lowStock = products.filter(p => p.quantity <= p.minStock).length;
-  const approachingStock = products.filter(
-    p => p.quantity > p.minStock && p.quantity <= p.minStock + 5
-  ).length;
   const damagedProducts = products.filter(p => p.damagedQuantity > 0).length;
   const totalDamagedQuantity = products.reduce((sum, p) => sum + (p.damagedQuantity || 0), 0);
 

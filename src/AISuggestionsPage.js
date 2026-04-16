@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "./AuthContext";
 import { 
-  Lightbulb, AlertTriangle, TrendingUp, TrendingDown, Package, 
+  Lightbulb, TrendingUp, Package, 
   DollarSign, Calendar, Gift, Trash2, Check, X, Filter, RefreshCw,
-  AlertCircle, BarChart3, ShoppingCart
+  AlertCircle, BarChart3
 } from "lucide-react";
 
 function AISuggestionsPage({ darkMode }) {
@@ -39,6 +39,7 @@ function AISuggestionsPage({ darkMode }) {
 
   useEffect(() => {
     fetchSuggestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterType, filterPriority]);
 
   const handleRefresh = async () => {
