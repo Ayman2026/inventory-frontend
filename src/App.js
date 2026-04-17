@@ -2050,7 +2050,9 @@ function App() {
                                 <span className={darkMode ? "text-gray-500" : "text-gray-400"}>—</span>
                               )}
                             </td>
-                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.quantity}</td>
+                            <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+                              {p.quantity + (p.damagedQuantity || 0)}
+                            </td>
                             <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>₹{p.price.toLocaleString()}</td>
                             <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{p.minStock}</td>
                             <td className={`px-6 py-4 font-semibold ${darkMode ? "text-indigo-400" : "text-indigo-600"}`}>₹{(p.quantity * p.price).toLocaleString()}</td>
