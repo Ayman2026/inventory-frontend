@@ -564,6 +564,85 @@ function App() {
   };
 
   const applyChange = async () => {
+    // Handle receive damaged from dealer
+    if (operation === "receive-damaged") {
+      const receiveDamagedQty = Number(changeValue);
+      
+      if (!receiveDamagedQty || receiveDamagedQty <= 0) {
+        showToast("Please enter a valid quantity", "error");
+        return;
+      }
+      
+      await api(`/products/${selectedProduct._id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          ...selectedProduct,
+          damagedQuantity: selectedProduct.damagedQuantity + receiveDamagedQty
+        })
+      });
+      
+      const dealerName = selectedDealer ? dealers.find(d => d._id === selectedDealer)?.name : "Unknown Dealer";
+      
+      await api("/history", {
+        method: "POST",
+        body: JSON.stringify({
+          name: selectedProduct.name,
+          change: `Received ${receiveDamagedQty} damaged from dealer`,
+          time: new Date().toLocaleString(),
+          note: note || `Damaged products received from ${dealerName}`
+        })
+      });
+      
+      setSelectedProduct(null);
+      setSelectedDealer("");
+      fetchProducts();
+      fetchHistory();
+      showToast("Damaged products received successfully!");
+      return;
+    }
+    
+    // Handle return damaged to supplier
+    if (operation === "return-damaged") {
+      const returnDamagedQty = Number(changeValue);
+      
+      if (!returnDamagedQty || returnDamagedQty <= 0) {
+        showToast("Please enter a valid quantity", "error");
+        return;
+      }
+      
+      if (returnDamagedQty > selectedProduct.damagedQuantity) {
+        showToast(`Cannot return ${returnDamagedQty} units. Only ${selectedProduct.damagedQuantity} damaged products available.`, "error");
+        return;
+      }
+      
+      await api(`/products/${selectedProduct._id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          ...selectedProduct,
+          damagedQuantity: selectedProduct.damagedQuantity - returnDamagedQty
+        })
+      });
+      
+      const supplierName = selectedSupplier ? suppliers.find(s => s._id === selectedSupplier)?.name : "Unknown Supplier";
+      
+      await api("/history", {
+        method: "POST",
+        body: JSON.stringify({
+          name: selectedProduct.name,
+          change: `Returned ${returnDamagedQty} damaged to supplier`,
+          time: new Date().toLocaleString(),
+          note: note || `Damaged products returned to ${supplierName}`
+        })
+      });
+      
+      setSelectedProduct(null);
+      setSelectedSupplier("");
+      fetchProducts();
+      fetchHistory();
+      showToast("Damaged products returned successfully!");
+      return;
+    }
+    
     if (operation === "receive" || operation === "dispatch") {
       // Validation for dispatch - cannot dispatch more than available good products
       if (operation === "dispatch") {
@@ -2470,12 +2549,42 @@ function App() {
                           {p.category && (
                             <p>Category: <span className="font-semibold">{p.category.name}</span></p>
                           )}
+                          {p.dealer && (
+                            <p>Dealer: <span className="font-semibold">{p.dealer.name}</span></p>
+                          )}
+                          {p.supplier && (
+                            <p>Supplier: <span className="font-semibold">{p.supplier.name}</span></p>
+                          )}
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex flex-col gap-2">
+                        <button
+                          onClick={() => openPopup(p, "receive-damaged")}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            darkMode ? "bg-orange-600 hover:bg-orange-700 text-white" : "bg-orange-500 hover:bg-orange-600 text-white"
+                          }`}
+                        >
+                          Receive from Dealer
+                        </button>
+                        <button
+                          onClick={() => openPopup(p, "return-damaged")}
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                            darkMode ? "bg-green-600 hover:bg-green-700 text-white" : "bg-green-500 hover:bg-green-600 text-white"
+                          }`}
+                        >
+                          Return to Supplier
+                        </button>
                         <button
                           onClick={() => {
-                            setForm(p);
+                            setForm({
+                              name: p.name,
+                              quantity: p.quantity + p.damagedQuantity,
+                              price: p.price,
+                              minStock: p.minStock,
+                              damagedQuantity: p.damagedQuantity,
+                              supplier: p.supplier?._id || "",
+                              dealer: p.dealer?._id || ""
+                            });
                             setEditId(p._id);
                             setSelectedCategory(p.category?._id || "");
                             setSelectedSubcategory(p.subcategory?._id || "");
@@ -2484,7 +2593,7 @@ function App() {
                             }
                             setPage("add");
                           }}
-                          className={`px-3 py-1 rounded text-sm font-medium transition ${
+                          className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                             darkMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
                           }`}
                         >
@@ -3797,6 +3906,8 @@ function App() {
                 <h3 className={`text-xl font-bold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>
                   {operation === "receive" ? "📦 Product Received" : 
                    operation === "dispatch" ? "🚚 Product Dispatched" :
+                   operation === "receive-damaged" ? "⚠️ Receive Damaged from Dealer" :
+                   operation === "return-damaged" ? "✅ Return Damaged to Supplier" :
                    operation === "add" ? "➕ Add Stock" : "➖ Subtract Stock"}
                 </h3>
                 <p className={`mb-5 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
@@ -3816,6 +3927,14 @@ function App() {
                   </div>
                 )}
 
+                {operation === "return-damaged" && (
+                  <div className={`mb-3 p-3 rounded-lg ${darkMode ? "bg-green-900/20 border border-green-700" : "bg-green-50 border border-green-200"}`}>
+                    <p className={`text-sm ${darkMode ? "text-green-400" : "text-green-700"}`}>
+                      ⚠️ Maximum return: <span className="font-bold">{selectedProduct.damagedQuantity}</span> damaged units
+                    </p>
+                  </div>
+                )}
+
                 {operation === "receive" && (
                   <div className={`mb-3 p-2 rounded-lg ${darkMode ? "bg-blue-900/20 border border-blue-700" : "bg-blue-50 border border-blue-200"}`}>
                     <p className={`text-xs ${darkMode ? "text-blue-400" : "text-blue-700"}`}>
@@ -3827,7 +3946,7 @@ function App() {
                 <input
                   type="number"
                   min="0"
-                  max={operation === "dispatch" ? selectedProduct.quantity : undefined}
+                  max={operation === "dispatch" ? selectedProduct.quantity : operation === "return-damaged" ? selectedProduct.damagedQuantity : undefined}
                   autoFocus
                   value={changeValue}
                   onChange={(e) => {
@@ -3863,7 +3982,13 @@ function App() {
                       setChangeValue('');
                     }
                   }}
-                  placeholder={operation === "receive" ? "Enter TOTAL quantity received (e.g., 50)" : "Enter quantity to dispatch"}
+                  placeholder={
+                    operation === "receive" ? "Enter TOTAL quantity received (e.g., 50)" : 
+                    operation === "dispatch" ? "Enter quantity to dispatch" :
+                    operation === "receive-damaged" ? "Enter damaged quantity received" :
+                    operation === "return-damaged" ? "Enter damaged quantity to return" :
+                    "Enter quantity"
+                  }
                   className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-blue-500 text-lg transition-colors ${
                     darkMode ? "bg-gray-700 border-gray-600 text-gray-100 placeholder-gray-500" : "border-gray-300 text-gray-900"
                   }`}
@@ -3954,6 +4079,36 @@ function App() {
                     <option value="">Select Dealer (Optional)</option>
                     {dealers.map(dealer => (
                       <option key={dealer._id} value={dealer._id}>{dealer.name}</option>
+                    ))}
+                  </select>
+                )}
+
+                {operation === "receive-damaged" && (
+                  <select
+                    value={selectedDealer}
+                    onChange={(e) => setSelectedDealer(e.target.value)}
+                    className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-orange-500 text-sm transition-colors ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "border-gray-300 text-gray-900"
+                    }`}
+                  >
+                    <option value="">Select Dealer (Optional)</option>
+                    {dealers.map(dealer => (
+                      <option key={dealer._id} value={dealer._id}>{dealer.name}</option>
+                    ))}
+                  </select>
+                )}
+
+                {operation === "return-damaged" && (
+                  <select
+                    value={selectedSupplier}
+                    onChange={(e) => setSelectedSupplier(e.target.value)}
+                    className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-green-500 text-sm transition-colors ${
+                      darkMode ? "bg-gray-700 border-gray-600 text-gray-100" : "border-gray-300 text-gray-900"
+                    }`}
+                  >
+                    <option value="">Select Supplier (Optional)</option>
+                    {suppliers.map(supplier => (
+                      <option key={supplier._id} value={supplier._id}>{supplier.name}</option>
                     ))}
                   </select>
                 )}
