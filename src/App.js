@@ -2107,19 +2107,31 @@ function App() {
                               </span>
                             </td>
                             <td className="px-6 py-4">
-                              <button
-                                onClick={() => openPopup(p, "mark-damaged")}
-                                disabled={p.quantity === 0}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
-                                  p.quantity === 0
-                                    ? "bg-gray-400 cursor-not-allowed text-gray-200"
-                                    : darkMode 
-                                    ? "bg-orange-600 hover:bg-orange-700 text-white" 
-                                    : "bg-orange-500 hover:bg-orange-600 text-white"
-                                }`}
-                              >
-                                Mark Damaged
-                              </button>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => editProduct(p)}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                                    darkMode 
+                                    ? "bg-blue-600 hover:bg-blue-700 text-white" 
+                                    : "bg-blue-500 hover:bg-blue-600 text-white"
+                                  }`}
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => openPopup(p, "mark-damaged")}
+                                  disabled={p.quantity === 0}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                                    p.quantity === 0
+                                      ? "bg-gray-400 cursor-not-allowed text-gray-200"
+                                      : darkMode 
+                                      ? "bg-orange-600 hover:bg-orange-700 text-white" 
+                                      : "bg-orange-500 hover:bg-orange-600 text-white"
+                                  }`}
+                                >
+                                  Mark Damaged
+                                </button>
+                              </div>
                             </td>
                           </tr>
                             );
