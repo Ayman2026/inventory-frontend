@@ -564,6 +564,46 @@ function App() {
   };
 
   const applyChange = async () => {
+    // Handle mark good products as damaged
+    if (operation === "mark-damaged") {
+      const markDamagedQty = Number(changeValue);
+      
+      if (!markDamagedQty || markDamagedQty <= 0) {
+        showToast("Please enter a valid quantity", "error");
+        return;
+      }
+      
+      if (markDamagedQty > selectedProduct.quantity) {
+        showToast(`Cannot mark ${markDamagedQty} units as damaged. Only ${selectedProduct.quantity} good products available.`, "error");
+        return;
+      }
+      
+      await api(`/products/${selectedProduct._id}`, {
+        method: "PUT",
+        body: JSON.stringify({
+          ...selectedProduct,
+          quantity: selectedProduct.quantity - markDamagedQty,
+          damagedQuantity: selectedProduct.damagedQuantity + markDamagedQty
+        })
+      });
+      
+      await api("/history", {
+        method: "POST",
+        body: JSON.stringify({
+          name: selectedProduct.name,
+          change: `Marked ${markDamagedQty} units as damaged`,
+          time: new Date().toLocaleString(),
+          note: note || "Products defected in warehouse"
+        })
+      });
+      
+      setSelectedProduct(null);
+      fetchProducts();
+      fetchHistory();
+      showToast("Products marked as damaged successfully!");
+      return;
+    }
+    
     // Handle receive damaged from dealer
     if (operation === "receive-damaged") {
       const receiveDamagedQty = Number(changeValue);
@@ -3910,6 +3950,7 @@ function App() {
                    operation === "dispatch" ? "Product Dispatched" :
                    operation === "receive-damaged" ? "Receive Damaged from Dealer" :
                    operation === "return-damaged" ? "Return Damaged to Supplier" :
+                   operation === "mark-damaged" ? "Mark Products as Damaged" :
                    operation === "add" ? "Add Stock" : "Subtract Stock"}
                 </h3>
                 <p className={`mb-5 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
@@ -3925,6 +3966,14 @@ function App() {
                   <div className={`mb-3 p-3 rounded-lg ${darkMode ? "bg-yellow-900/20 border border-yellow-700" : "bg-yellow-50 border border-yellow-200"}`}>
                     <p className={`text-sm ${darkMode ? "text-yellow-400" : "text-yellow-700"}`}>
                       Maximum dispatch: <span className="font-bold">{selectedProduct.quantity}</span> units (good products only)
+                    </p>
+                  </div>
+                )}
+
+                {operation === "mark-damaged" && (
+                  <div className={`mb-3 p-3 rounded-lg ${darkMode ? "bg-orange-900/20 border border-orange-700" : "bg-orange-50 border border-orange-200"}`}>
+                    <p className={`text-sm ${darkMode ? "text-orange-400" : "text-orange-700"}`}>
+                      Maximum: <span className="font-bold">{selectedProduct.quantity}</span> good units can be marked as damaged
                     </p>
                   </div>
                 )}
@@ -3948,7 +3997,9 @@ function App() {
                 <input
                   type="number"
                   min="0"
-                  max={operation === "dispatch" ? selectedProduct.quantity : operation === "return-damaged" ? selectedProduct.damagedQuantity : undefined}
+                  max={operation === "dispatch" ? selectedProduct.quantity : 
+                       operation === "return-damaged" ? selectedProduct.damagedQuantity : 
+                       operation === "mark-damaged" ? selectedProduct.quantity : undefined}
                   autoFocus
                   value={changeValue}
                   onChange={(e) => {
@@ -3989,6 +4040,7 @@ function App() {
                     operation === "dispatch" ? "Enter quantity to dispatch" :
                     operation === "receive-damaged" ? "Enter damaged quantity received" :
                     operation === "return-damaged" ? "Enter damaged quantity to return" :
+                    operation === "mark-damaged" ? "Enter quantity to mark as damaged" :
                     "Enter quantity"
                   }
                   className={`w-full border-2 rounded-lg p-3 mb-3 focus:outline-none focus:border-blue-500 text-lg transition-colors ${
@@ -4275,6 +4327,14 @@ function App() {
                     }`}
                   >
                     Dispatch
+                  </button>
+                  <button
+                    onClick={() => openPopup(selectedProduct, "mark-damaged")}
+                    className={`flex-1 py-2.5 rounded-lg font-medium transition ${
+                      darkMode ? "bg-orange-900/30 hover:bg-orange-900/50 text-orange-300" : "bg-orange-50 hover:bg-orange-100 text-orange-700"
+                    }`}
+                  >
+                    Mark Damaged
                   </button>
                   <button
                     onClick={() => editProduct(selectedProduct)}
