@@ -540,16 +540,18 @@ function App() {
   const editProduct = (p) => {
     setForm({
       name: p.name,
-      quantity: p.quantity,
+      quantity: p.quantity + (p.damagedQuantity || 0), // Total quantity for the form
       price: p.price,
       minStock: p.minStock,
-      damagedQuantity: p.damagedQuantity || 0
+      damagedQuantity: p.damagedQuantity || 0,
+      supplier: p.supplier?._id || "",
+      dealer: p.dealer?._id || ""
     });
     setEditId(p._id);
-    setSelectedCategory(p.category || "");
-    setSelectedSubcategory(p.subcategory || "");
-    if (p.category) {
-      fetchSubcategories(p.category);
+    setSelectedCategory(p.category?._id || "");
+    setSelectedSubcategory(p.subcategory?._id || "");
+    if (p.category?._id) {
+      fetchSubcategories(p.category._id);
     }
     setPage("add");
   };
