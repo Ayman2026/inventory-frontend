@@ -818,7 +818,7 @@ function App() {
           <span className="text-lg">
             {toast.type === "success" ? "✓" :
              toast.type === "error" ? "✕" :
-             toast.type === "warning" ? "⚠" : "ℹ"}
+             toast.type === "warning" ? "!" : "i"}
           </span>
           <span>{toast.message}</span>
           <button
@@ -1061,7 +1061,7 @@ function App() {
           darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
         }`}>
           <div className="flex items-center gap-4">
-            <button onClick={() => setMobileMenuOpen(true)} className={`text-2xl md:hidden ${darkMode ? "text-gray-300" : "text-gray-600"}`}>☰</button>
+            <button onClick={() => setMobileMenuOpen(true)} className={`text-2xl md:hidden ${darkMode ? "text-gray-300" : "text-gray-600"}`}>Menu</button>
             <div>
               <h1 className={`text-xl font-semibold capitalize ${darkMode ? "text-white" : "text-gray-900"}`}>
                 {page === "add" ? "Add Product" : 
@@ -1389,7 +1389,7 @@ function App() {
                             darkMode ? "text-indigo-400 hover:bg-gray-700" : "text-indigo-600 hover:bg-gray-100"
                           }`}
                         >
-                          View All →
+                          View All
                         </button>
                       </div>
                       {history.length === 0 ? (
@@ -1934,7 +1934,7 @@ function App() {
                         <span className="font-semibold"> in category: {categories.find(c => c._id === filterCategory)?.name}</span>
                       )}
                       {filterSubcategory && (
-                        <span className="font-semibold"> → subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}</span>
+                        <span className="font-semibold"> in subcategory: {subcategories.find(s => s._id === filterSubcategory)?.name}</span>
                       )}
                     </p>
                   </div>
@@ -2457,14 +2457,14 @@ function App() {
           {page === "lowstock" && (
             <div>
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                <h2 className={`text-2xl font-bold ${darkMode ? "text-red-400" : "text-red-600"}`}>⚠️ Low Stock Items</h2>
+                <h2 className={`text-2xl font-bold ${darkMode ? "text-red-400" : "text-red-600"}`}>Low Stock Items</h2>
                 <button
                   onClick={() => setPage("dashboard")}
                   className={`px-4 py-2 rounded-lg transition w-full md:w-auto ${
                     darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                   }`}
                 >
-                  ← Back
+                  Back
                 </button>
               </div>
 
@@ -2472,7 +2472,7 @@ function App() {
                 <div className={`p-6 rounded-xl text-center text-lg font-semibold ${
                   darkMode ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"
                 }`}>
-                  ✅ All products are well stocked!
+                  All products are well stocked!
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -2519,14 +2519,14 @@ function App() {
           {page === "damaged" && (
             <div>
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                <h2 className={`text-2xl font-bold ${darkMode ? "text-orange-400" : "text-orange-600"}`}>⚠️ Damaged Products</h2>
+                <h2 className={`text-2xl font-bold ${darkMode ? "text-orange-400" : "text-orange-600"}`}>Damaged Products</h2>
                 <button
                   onClick={() => setPage("dashboard")}
                   className={`px-4 py-2 rounded-lg transition w-full md:w-auto ${
                     darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                   }`}
                 >
-                  ← Back
+                  Back
                 </button>
               </div>
 
@@ -2534,7 +2534,7 @@ function App() {
                 <div className={`p-6 rounded-xl text-center text-lg font-semibold ${
                   darkMode ? "bg-green-900/30 text-green-400" : "bg-green-100 text-green-700"
                 }`}>
-                  ✅ No damaged products!
+                  No damaged products!
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -2613,14 +2613,14 @@ function App() {
           {page === "worth" && (
             <div>
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                <h2 className={`text-2xl font-bold ${darkMode ? "text-purple-400" : "text-purple-600"}`}>💰 Total Worth Breakdown</h2>
+                <h2 className={`text-2xl font-bold ${darkMode ? "text-purple-400" : "text-purple-600"}`}>Total Worth Breakdown</h2>
                 <button
                   onClick={() => setPage("dashboard")}
                   className={`px-4 py-2 rounded-lg transition w-full md:w-auto ${
                     darkMode ? "bg-gray-700 hover:bg-gray-600 text-gray-300" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                   }`}
                 >
-                  ← Back
+                  Back
                 </button>
               </div>
 
@@ -3161,7 +3161,7 @@ function App() {
             <div>
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
                 <div>
-                  <h2 className={`text-2xl font-bold ${darkMode ? "text-orange-400" : "text-orange-600"}`}>🔥 Top Movers</h2>
+                  <h2 className={`text-2xl font-bold ${darkMode ? "text-orange-400" : "text-orange-600"}`}>Top Movers</h2>
                   <p className={`text-sm mt-1 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Products with the highest stock movement velocity</p>
                 </div>
                 <button
@@ -3279,7 +3279,7 @@ function App() {
           {page === "history" && (
             <div>
               <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
-                <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-800"}`}>📋 History</h2>
+                <h2 className={`text-2xl font-bold ${darkMode ? "text-white" : "text-gray-800"}`}>History</h2>
                 <div className="flex flex-col md:flex-row gap-3 w-full md:w-auto">
                   {history.length > 0 && (
                     <button
@@ -3513,7 +3513,7 @@ function App() {
                                   )}
                                 </td>
                                 <td className={`px-6 py-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-                                  {h.supplier ? `🚚 ${h.supplier.name}` : h.dealer ? `👥 ${h.dealer.name}` : "—"}
+                                  {h.supplier ? h.supplier.name : h.dealer ? h.dealer.name : "—"}
                                 </td>
                                 <td className={`px-6 py-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                                   📅 {h.time}
@@ -3532,7 +3532,7 @@ function App() {
                                     }}
                                     className="text-red-400 hover:text-red-600 transition"
                                   >
-                                    🗑️
+                                    Delete
                                   </button>
                                 </td>
                               </tr>
@@ -3906,11 +3906,11 @@ function App() {
                 darkMode ? "bg-gray-800" : "bg-white"
               }`}>
                 <h3 className={`text-xl font-bold mb-2 ${darkMode ? "text-white" : "text-gray-800"}`}>
-                  {operation === "receive" ? "📦 Product Received" : 
-                   operation === "dispatch" ? "🚚 Product Dispatched" :
-                   operation === "receive-damaged" ? "⚠️ Receive Damaged from Dealer" :
-                   operation === "return-damaged" ? "✅ Return Damaged to Supplier" :
-                   operation === "add" ? "➕ Add Stock" : "➖ Subtract Stock"}
+                  {operation === "receive" ? "Product Received" : 
+                   operation === "dispatch" ? "Product Dispatched" :
+                   operation === "receive-damaged" ? "Receive Damaged from Dealer" :
+                   operation === "return-damaged" ? "Return Damaged to Supplier" :
+                   operation === "add" ? "Add Stock" : "Subtract Stock"}
                 </h3>
                 <p className={`mb-5 ${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                   {selectedProduct.name} — Current: <span className={`font-bold ${darkMode ? "text-gray-200" : "text-gray-800"}`}>{selectedProduct.quantity}</span>
@@ -3924,7 +3924,7 @@ function App() {
                 {operation === "dispatch" && (
                   <div className={`mb-3 p-3 rounded-lg ${darkMode ? "bg-yellow-900/20 border border-yellow-700" : "bg-yellow-50 border border-yellow-200"}`}>
                     <p className={`text-sm ${darkMode ? "text-yellow-400" : "text-yellow-700"}`}>
-                      ⚠️ Maximum dispatch: <span className="font-bold">{selectedProduct.quantity}</span> units (good products only)
+                      Maximum dispatch: <span className="font-bold">{selectedProduct.quantity}</span> units (good products only)
                     </p>
                   </div>
                 )}
@@ -3932,7 +3932,7 @@ function App() {
                 {operation === "return-damaged" && (
                   <div className={`mb-3 p-3 rounded-lg ${darkMode ? "bg-green-900/20 border border-green-700" : "bg-green-50 border border-green-200"}`}>
                     <p className={`text-sm ${darkMode ? "text-green-400" : "text-green-700"}`}>
-                      ⚠️ Maximum return: <span className="font-bold">{selectedProduct.damagedQuantity}</span> damaged units
+                      Maximum return: <span className="font-bold">{selectedProduct.damagedQuantity}</span> damaged units
                     </p>
                   </div>
                 )}
@@ -3940,7 +3940,7 @@ function App() {
                 {operation === "receive" && (
                   <div className={`mb-3 p-2 rounded-lg ${darkMode ? "bg-blue-900/20 border border-blue-700" : "bg-blue-50 border border-blue-200"}`}>
                     <p className={`text-xs ${darkMode ? "text-blue-400" : "text-blue-700"}`}>
-                      💡 Enter TOTAL quantity received, then damaged quantity. Good will be calculated automatically.
+                      Enter TOTAL quantity received, then damaged quantity. Good will be calculated automatically.
                     </p>
                   </div>
                 )}
@@ -4046,9 +4046,9 @@ function App() {
                     {changeValue && (
                       <div className={`mb-3 p-2 rounded-lg ${darkMode ? "bg-green-900/20 border border-green-700" : "bg-green-50 border border-green-200"}`}>
                         <p className={`text-sm ${darkMode ? "text-green-400" : "text-green-700"}`}>
-                          📊 Total: <span className="font-bold">{changeValue}</span> units
-                          <span className="ml-2">→ ✅ Good: <span className="font-bold">{(Number(changeValue) || 0) - (Number(damagedValue) || 0)}</span></span>
-                          {damagedValue && <span className="ml-2">❌ Damaged: <span className="font-bold">{damagedValue}</span></span>}
+                          Total: <span className="font-bold">{changeValue}</span> units
+                          <span className="ml-2">Good: <span className="font-bold">{(Number(changeValue) || 0) - (Number(damagedValue) || 0)}</span></span>
+                          {damagedValue && <span className="ml-2">Damaged: <span className="font-bold">{damagedValue}</span></span>}
                         </p>
                       </div>
                     )}
@@ -4262,7 +4262,7 @@ function App() {
                       darkMode ? "bg-emerald-900/30 hover:bg-emerald-900/50 text-emerald-300" : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
                     }`}
                   >
-                    📦 Receive
+                    Receive
                   </button>
                   <button
                     onClick={() => {
@@ -4274,7 +4274,7 @@ function App() {
                       darkMode ? "bg-blue-900/30 hover:bg-blue-900/50 text-blue-300" : "bg-blue-50 hover:bg-blue-100 text-blue-700"
                     }`}
                   >
-                    🚚 Dispatch
+                    Dispatch
                   </button>
                   <button
                     onClick={() => editProduct(selectedProduct)}
@@ -4282,7 +4282,7 @@ function App() {
                       darkMode ? "bg-indigo-900/30 hover:bg-indigo-900/50 text-indigo-300" : "bg-indigo-50 hover:bg-indigo-100 text-indigo-700"
                     }`}
                   >
-                    ✏️ Edit
+                    Edit
                   </button>
                 </div>
               </div>
