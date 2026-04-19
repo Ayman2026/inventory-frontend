@@ -100,6 +100,8 @@ function App() {
   // Suppliers and Dealers
   const [suppliers, setSuppliers] = useState([]);
   const [dealers, setDealers] = useState([]);
+  const [suppliersLoading, setSuppliersLoading] = useState(false);
+  const [dealersLoading, setDealersLoading] = useState(false);
   const [supplierForm, setSupplierForm] = useState({
     name: "", contactPerson: "", email: "", phone: "", address: "",
     city: "", state: "", pincode: "", gstNumber: "", notes: ""
@@ -202,9 +204,13 @@ function App() {
 
   // Supplier Functions
   const fetchSuppliers = () => {
+    setSuppliersLoading(true);
     api("/suppliers")
-      .then(data => setSuppliers(data))
-      .catch(() => {});
+      .then(data => {
+        setSuppliers(data);
+        setSuppliersLoading(false);
+      })
+      .catch(() => setSuppliersLoading(false));
   };
 
   const handleSupplierSubmit = async () => {
@@ -242,9 +248,13 @@ function App() {
 
   // Dealer Functions
   const fetchDealers = () => {
+    setDealersLoading(true);
     api("/dealers")
-      .then(data => setDealers(data))
-      .catch(() => {});
+      .then(data => {
+        setDealers(data);
+        setDealersLoading(false);
+      })
+      .catch(() => setDealersLoading(false));
   };
 
   const handleDealerSubmit = async () => {
@@ -317,6 +327,10 @@ function App() {
   useEffect(() => {
     if (page === "topmovers") {
       fetchTopMovers();
+    } else if (page === "suppliers-view") {
+      fetchSuppliers();
+    } else if (page === "dealers-view") {
+      fetchDealers();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
@@ -3055,52 +3069,58 @@ function App() {
           {/* VIEW SUPPLIERS PAGE */}
           {page === "suppliers-view" && (
             <div>
-              <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
-                      <tr>
-                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Name</th>
-                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Phone</th>
-                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Address</th>
-                        <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
-                      {suppliers.map(supplier => (
-                        <tr key={supplier._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
-                          <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{supplier.name}</td>
-                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{supplier.phone}</td>
-                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{supplier.address}</td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              <button
-                                onClick={() => {
-                                  editSupplier(supplier);
-                                  setPage("suppliers-add");
-                                }}
-                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => confirmAction("Delete Supplier?", `Delete "${supplier.name}"?`, () => deleteSupplier(supplier._id))}
-                                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              {suppliers.length === 0 && (
-                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
-                  <p className="text-sm">No suppliers added yet</p>
-                </div>
+              {suppliersLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <>
+                  <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
+                          <tr>
+                            <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Name</th>
+                            <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Phone</th>
+                            <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Address</th>
+                            <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                          {suppliers.map(supplier => (
+                            <tr key={supplier._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
+                              <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{supplier.name}</td>
+                              <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{supplier.phone}</td>
+                              <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{supplier.address}</td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    onClick={() => {
+                                      editSupplier(supplier);
+                                      setPage("suppliers-add");
+                                    }}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => confirmAction("Delete Supplier?", `Delete "${supplier.name}"?`, () => deleteSupplier(supplier._id))}
+                                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {suppliers.length === 0 && (
+                    <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                      <p className="text-sm">No suppliers added yet</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -3176,52 +3196,58 @@ function App() {
           {/* VIEW DEALERS PAGE */}
           {page === "dealers-view" && (
             <div>
-              <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
-                      <tr>
-                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Name</th>
-                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Phone</th>
-                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Address</th>
-                        <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
-                      {dealers.map(dealer => (
-                        <tr key={dealer._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
-                          <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{dealer.name}</td>
-                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{dealer.phone}</td>
-                          <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{dealer.address}</td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-2">
-                              <button
-                                onClick={() => {
-                                  editDealer(dealer);
-                                  setPage("dealers-add");
-                                }}
-                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => confirmAction("Delete Dealer?", `Delete "${dealer.name}"?`, () => deleteDealer(dealer._id))}
-                                className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              {dealers.length === 0 && (
-                <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
-                  <p className="text-sm">No dealers added yet</p>
-                </div>
+              {dealersLoading ? (
+                <LoadingSpinner />
+              ) : (
+                <>
+                  <div className={`border rounded-lg overflow-hidden ${darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className={darkMode ? "bg-gray-700" : "bg-gray-50"}>
+                          <tr>
+                            <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Name</th>
+                            <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Phone</th>
+                            <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Address</th>
+                            <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${darkMode ? "text-gray-300" : "text-gray-500"}`}>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className={`divide-y ${darkMode ? "divide-gray-700" : "divide-gray-200"}`}>
+                          {dealers.map(dealer => (
+                            <tr key={dealer._id} className={`transition ${darkMode ? "hover:bg-gray-700" : "hover:bg-gray-50"}`}>
+                              <td className={`px-6 py-4 font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{dealer.name}</td>
+                              <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{dealer.phone}</td>
+                              <td className={`px-6 py-4 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>{dealer.address}</td>
+                              <td className="px-6 py-4 text-right">
+                                <div className="flex justify-end gap-2">
+                                  <button
+                                    onClick={() => {
+                                      editDealer(dealer);
+                                      setPage("dealers-add");
+                                    }}
+                                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => confirmAction("Delete Dealer?", `Delete "${dealer.name}"?`, () => deleteDealer(dealer._id))}
+                                    className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded transition"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  {dealers.length === 0 && (
+                    <div className={`text-center py-12 ${darkMode ? "text-gray-500" : "text-gray-400"}`}>
+                      <p className="text-sm">No dealers added yet</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
